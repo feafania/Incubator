@@ -1,6 +1,8 @@
-export type GetPostModelById = {
-    /**
-     * id of the post
-     */
-    id: string;
-}
+type GetPostModelById = {
+  /**
+   * id of the post
+   */
+  id: string;
+};
+
+export default GetPostModelById;
