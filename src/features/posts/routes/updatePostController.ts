@@ -1,11 +1,12 @@
 import { Response } from "express";
-import { OutputErrorsType, RequestWithParamsAndBody } from "../../../db/types";
-import { HTTP_STATUSES } from "../../../db/utils";
-import postsService from "../posts.service";
+import postsService from "../application/posts.service";
 import UpdatePostInputModel, {
   UpdatePostInputModelByID,
-} from "../modeles/UpdateModels";
-import ViewPostModel from "../modeles/ViewModels";
+} from "../domain/modeles/UpdateModels";
+import ViewPostModel from "../domain/modeles/ViewModels";
+import { RequestWithParamsAndBody } from "../../../core/types/request";
+import { OutputErrorsType } from "../../../core/errors/types/errors";
+import { HTTP_STATUSES } from "../../../core/types/http-statuses";
 
 export const updatePostController = async (
   req: RequestWithParamsAndBody<UpdatePostInputModelByID, UpdatePostInputModel>,
@@ -28,7 +29,7 @@ export const updatePostController = async (
 
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
     return;
-  } catch (error) {
+  } catch {
     res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
   }
 };

@@ -1,19 +1,13 @@
-import { HTTP_STATUSES, mapToPaginatedOutput } from "../../../db/utils";
-import { Response, Request } from "express";
-import blogsService from "../blogs.service";
-import ViewBlogModel from "../modeles/ViewModels";
-import {
-  QueryInput,
-  PaginatedOutput,
-  RequestWithQuery,
-  BlogsKeys,
-  RequestWithParamsAndBody,
-  OutputErrorsType,
-} from "../../../db/types";
-import GetBlogModelById from "../modeles/ReadModels";
-import CreatePostInputModel from "../../posts/modeles/CreateModels";
-import ViewPostModel from "../../posts/modeles/ViewModels";
-import postsService from "../../posts/posts.service";
+import { Response } from "express";
+import blogsService from "../application/blogs.service";
+
+import GetBlogModelById from "../domain/modeles/ReadModels";
+import ViewPostModel from "../../posts/domain/modeles/ViewModels";
+import CreatePostInputModel from "../../posts/domain/modeles/CreateModels";
+import postsService from "../../posts/application/posts.service";
+import { RequestWithParamsAndBody } from "../../../core/types/request";
+import { OutputErrorsType } from "../../../core/errors/types/errors";
+import { HTTP_STATUSES } from "../../../core/types/http-statuses";
 
 export const createBlogPostController = async (
   req: RequestWithParamsAndBody<GetBlogModelById, CreatePostInputModel>,

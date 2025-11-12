@@ -1,0 +1,62 @@
+openapi: 3.0.0
+info:
+  title: Auth API Documentation
+  version: 1.0.0
+
+tags:
+  - name: Login
+    description: API for user login
+
+paths:
+  /auth/login:
+    post:
+      summary: Try login user to the system
+      tags: [Login]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInputModel"
+      responses:
+        204:
+          description: Login and password are correct, no content returned
+        400:
+          description: Input model has incorrect values
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorListOutput"
+        401:
+          description: Password or login is wrong
+
+components:
+  schemas:
+    LoginInputModel:
+      type: object
+      required:
+        - loginOrEmail
+        - password
+      properties:
+        loginOrEmail:
+          type: string
+          example: user@example.com
+        password:
+          type: string
+          example: 12345678
+
+    ValidationErrorOutput:
+      type: object
+      properties:
+        message:
+          type: string
+        field:
+          type: string
+
+    ValidationErrorListOutput:
+      type: object
+      properties:
+        errorsMessages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationErrorOutput"

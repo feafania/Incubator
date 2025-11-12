@@ -1,20 +1,19 @@
 import { Response } from "express";
-import { HTTP_STATUSES, mapToPaginatedOutput } from "../../../db/utils";
-import {
-  PaginatedOutput,
-  PostsKeys,
-  QueryInput,
-  RequestWithParamsAndQuery,
-} from "../../../db/types";
-import blogsService from "../blogs.service";
-import GetBlogModelById from "../modeles/ReadModels";
-import postsService from "../../posts/posts.service";
-import ViewPostModel from "../../posts/modeles/ViewModels";
-import { buildValidatedQuery } from "../../utils";
+import blogsService from "../application/blogs.service";
+import GetBlogModelById from "../domain/modeles/ReadModels";
+import { PostsKeys } from "../../posts/domain/posts";
+import ViewPostModel from "../../posts/domain/modeles/ViewModels";
+import postsService from "../../posts/application/posts.service";
+import { RequestWithParamsAndQuery } from "../../../core/types/request";
+import { QueryInput } from "../../../core/types/input-response";
+import { PaginatedOutputWithItems } from "../../../core/types/paginated.output";
+import { HTTP_STATUSES } from "../../../core/types/http-statuses";
+import { buildValidatedQuery } from "../../../core/middlewares/validation/build-validated-query";
+import { mapToPaginatedOutput } from "../../../core/utils";
 
 export const findBlogPostsController = async (
   req: RequestWithParamsAndQuery<GetBlogModelById, QueryInput<PostsKeys>>,
-  res: Response<PaginatedOutput<ViewPostModel>>,
+  res: Response<PaginatedOutputWithItems<ViewPostModel>>,
 ): Promise<void> => {
   try {
     const foundBlog = await blogsService.findByID(req.params.id);
@@ -34,7 +33,7 @@ export const findBlogPostsController = async (
       totalCount,
     });
     res.status(HTTP_STATUSES.OK_200).json(postsListOutput);
-  } catch (error) {
+  } catch {
     res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
   }
 };

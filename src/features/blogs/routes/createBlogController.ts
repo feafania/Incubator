@@ -1,9 +1,10 @@
 import { Response } from "express";
-import { OutputErrorsType, RequestWithBody } from "../../../db/types";
-import { HTTP_STATUSES } from "../../../db/utils";
-import blogsService from "../blogs.service";
-import CreateBlogInputModel from "../modeles/CreateModels";
-import ViewBlogModel from "../modeles/ViewModels";
+import blogsService from "../application/blogs.service";
+import CreateBlogInputModel from "../domain/modeles/CreateModels";
+import ViewBlogModel from "../domain/modeles/ViewModels";
+import { RequestWithBody } from "../../../core/types/request";
+import { OutputErrorsType } from "../../../core/errors/types/errors";
+import { HTTP_STATUSES } from "../../../core/types/http-statuses";
 
 export const createBlogController = async (
   req: RequestWithBody<CreateBlogInputModel>,

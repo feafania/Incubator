@@ -1,9 +1,9 @@
 import { Response } from "express";
-import { HTTP_STATUSES } from "../../../db/utils";
-import { RequestWithParams } from "../../../db/types";
-import blogsService from "../blogs.service";
-import GetBlogModelById from "../modeles/ReadModels";
-import ViewBlogModel from "../modeles/ViewModels";
+import blogsService from "../application/blogs.service";
+import GetBlogModelById from "../domain/modeles/ReadModels";
+import ViewBlogModel from "../domain/modeles/ViewModels";
+import { RequestWithParams } from "../../../core/types/request";
+import { HTTP_STATUSES } from "../../../core/types/http-statuses";
 
 export const findBlogController = async (
   req: RequestWithParams<GetBlogModelById>,
@@ -16,7 +16,7 @@ export const findBlogController = async (
       return;
     }
     res.status(HTTP_STATUSES.OK_200).json(foundBlog);
-  } catch (error) {
+  } catch {
     res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
   }
 };

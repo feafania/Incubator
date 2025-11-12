@@ -1,0 +1,173 @@
+openapi: 3.0.0
+info:
+  title: API Documentation
+  version: 1.0.0
+
+securitySchemes:
+  BasicAuth:
+    type: http
+    scheme: basic
+
+tags:
+  - name: Posts
+    description: API for managing posts
+
+paths:
+  /posts:
+    get:
+      summary: Returns posts with paging and sorting
+      tags: [Posts]
+      parameters:
+        - name: sortBy
+          in: query
+          description: Field to sort by (e.g. createdAt, title)
+          required: false
+          schema:
+            type: string
+            default: createdAt
+        - name: sortDirection
+          in: query
+          description: Sorting direction
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: pageNumber
+          in: query
+          description: Number of the page to return
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 1
+        - name: pageSize
+          in: query
+          description: Size of the page (number of items)
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 10
+      responses:
+        200:
+          description: Paginated list of all posts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pagesCount:
+                    type: integer
+                    example: 1
+                  page:
+                    type: integer
+                    example: 1
+                  pageSize:
+                    type: integer
+                    example: 10
+                  totalCount:
+                    type: integer
+                    example: 2
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PostViewModel"
+    post:
+      summary: Create a new post
+      tags: [Posts]
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePostInputModel"
+      responses:
+        201:
+          description: The post was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostViewModel"
+        400:
+          description: Validation error
+        401:
+          description: Not authorized
+
+  /posts/{id}:
+    get:
+      summary: Get a specific post by ID
+      tags: [Posts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: The post was successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostViewModel"
+        404:
+          description: Post not found
+    put:
+      summary: Update a post by ID
+      tags: [Posts]
+      security:
+        - basicAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePostInputModel"
+      responses:
+        204:
+          description: The post was successfully updated
+        400:
+          description: Validation error
+        401:
+          description: Not authorized
+        404:
+          description: Post not found
+    delete:
+      summary: Delete a post by ID
+      tags: [Posts]
+      security:
+        - basicAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: The post was successfully deleted
+        401:
+          description: Not authorized
+        404:
+          description: Post not found
+
+  /posts/delete-all:
+    delete:
+      summary: Delete all posts
+      tags: [Posts]
+      security:
+        - basicAuth: []
+      responses:
+        204:
+          description: All posts were successfully deleted
+        401:
+          description: Not authorized

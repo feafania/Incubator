@@ -1,8 +1,8 @@
 import { Response } from "express";
-import { HTTP_STATUSES } from "../../../db/utils";
-import { RequestWithParams } from "../../../db/types";
-import blogsService from "../blogs.service";
-import GetBlogModelById from "../modeles/ReadModels";
+import blogsService from "../application/blogs.service";
+import GetBlogModelById from "../domain/modeles/ReadModels";
+import { RequestWithParams } from "../../../core/types/request";
+import { HTTP_STATUSES } from "../../../core/types/http-statuses";
 
 export const deleteBlogController = async (
   req: RequestWithParams<GetBlogModelById>,
@@ -17,7 +17,7 @@ export const deleteBlogController = async (
     await blogsService.deleteBlog(blogIndex);
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
     return;
-  } catch (error) {
+  } catch {
     res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
   }
 };

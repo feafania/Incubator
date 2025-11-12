@@ -1,8 +1,9 @@
 import { Response } from "express";
-import { HTTP_STATUSES } from "../../../db/utils";
-import { RequestWithParams } from "../../../db/types";
-import postsService from "../posts.service";
-import GetPostModelById from "../modeles/ReadModels";
+
+import postsService from "../application/posts.service";
+import GetPostModelById from "../domain/modeles/ReadModels";
+import { RequestWithParams } from "../../../core/types/request";
+import { HTTP_STATUSES } from "../../../core/types/http-statuses";
 
 export const deletePostController = async (
   req: RequestWithParams<GetPostModelById>,
@@ -17,7 +18,7 @@ export const deletePostController = async (
     await postsService.deletePost(postIndex);
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
     return;
-  } catch (error) {
+  } catch {
     res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
   }
 };

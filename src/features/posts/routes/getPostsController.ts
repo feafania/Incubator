@@ -1,18 +1,17 @@
-import { HTTP_STATUSES, mapToPaginatedOutput } from "../../../db/utils";
 import { Response } from "express";
-import postsService from "../posts.service";
-import ViewPostModel from "../modeles/ViewModels";
-import {
-  PaginatedOutput,
-  PostsKeys,
-  QueryInput,
-  RequestWithQuery,
-} from "../../../db/types";
-import { buildValidatedQuery } from "../../utils";
+import postsService from "../application/posts.service";
+import ViewPostModel from "../domain/modeles/ViewModels";
+import { PostsKeys } from "../domain/posts";
+import { RequestWithQuery } from "../../../core/types/request";
+import { QueryInput } from "../../../core/types/input-response";
+import { PaginatedOutputWithItems } from "../../../core/types/paginated.output";
+import { buildValidatedQuery } from "../../../core/middlewares/validation/build-validated-query";
+import { mapToPaginatedOutput } from "../../../core/utils";
+import { HTTP_STATUSES } from "../../../core/types/http-statuses";
 
 export const getPostsController = async (
   req: RequestWithQuery<QueryInput<PostsKeys>>,
-  res: Response<PaginatedOutput<ViewPostModel>>,
+  res: Response<PaginatedOutputWithItems<ViewPostModel>>,
 ): Promise<void> => {
   try {
     const queryInput: QueryInput<PostsKeys> =
@@ -24,7 +23,7 @@ export const getPostsController = async (
       totalCount,
     });
     res.status(HTTP_STATUSES.OK_200).json(postsListOutput);
-  } catch (error) {
+  } catch {
     res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
   }
 };

@@ -1,9 +1,10 @@
 import { Response } from "express";
-import { OutputErrorsType, RequestWithBody } from "../../../db/types";
-import { HTTP_STATUSES } from "../../../db/utils";
-import postsService from "../posts.service";
-import CreatePostInputModel from "../modeles/CreateModels";
-import ViewPostModel from "../modeles/ViewModels";
+import postsService from "../application/posts.service";
+import CreatePostInputModel from "../domain/modeles/CreateModels";
+import ViewPostModel from "../domain/modeles/ViewModels";
+import { RequestWithBody } from "../../../core/types/request";
+import { OutputErrorsType } from "../../../core/errors/types/errors";
+import { HTTP_STATUSES } from "../../../core/types/http-statuses";
 
 export const createPostController = async (
   req: RequestWithBody<CreatePostInputModel>,
@@ -17,7 +18,7 @@ export const createPostController = async (
       return;
     }
     res.status(HTTP_STATUSES.CREATE_201).json(inputResult.post);
-  } catch (error) {
+  } catch {
     res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
   }
 };

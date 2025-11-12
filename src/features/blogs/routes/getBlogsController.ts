@@ -1,18 +1,17 @@
-import { HTTP_STATUSES, mapToPaginatedOutput } from "../../../db/utils";
-import { Response, Request } from "express";
-import blogsService from "../blogs.service";
-import ViewBlogModel from "../modeles/ViewModels";
-import {
-  QueryInput,
-  PaginatedOutput,
-  RequestWithQuery,
-  BlogsKeys,
-} from "../../../db/types";
-import { buildValidatedQuery } from "../../utils";
+import { Response } from "express";
+import blogsService from "../application/blogs.service";
+import ViewBlogModel from "../domain/modeles/ViewModels";
+import { BlogsKeys } from "../domain/blogs";
+import { RequestWithQuery } from "../../../core/types/request";
+import { QueryInput } from "../../../core/types/input-response";
+import { PaginatedOutputWithItems } from "../../../core/types/paginated.output";
+import { buildValidatedQuery } from "../../../core/middlewares/validation/build-validated-query";
+import { mapToPaginatedOutput } from "../../../core/utils";
+import { HTTP_STATUSES } from "../../../core/types/http-statuses";
 
 export const getBlogsController = async (
   req: RequestWithQuery<QueryInput<BlogsKeys>>,
-  res: Response<PaginatedOutput<ViewBlogModel>>,
+  res: Response<PaginatedOutputWithItems<ViewBlogModel>>,
 ): Promise<void> => {
   try {
     const queryInput: QueryInput<BlogsKeys> =
@@ -26,7 +25,7 @@ export const getBlogsController = async (
       totalCount,
     });
     res.status(HTTP_STATUSES.OK_200).json(blogsListOutput);
-  } catch (error) {
+  } catch {
     res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
   }
 };

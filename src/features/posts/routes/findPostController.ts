@@ -1,9 +1,9 @@
 import { Response } from "express";
-import { HTTP_STATUSES } from "../../../db/utils";
-import { RequestWithParams } from "../../../db/types";
-import postsService from "../posts.service";
-import GetPostModelById from "../modeles/ReadModels";
-import ViewPostModel from "../modeles/ViewModels";
+import postsService from "../application/posts.service";
+import GetPostModelById from "../domain/modeles/ReadModels";
+import ViewPostModel from "../domain/modeles/ViewModels";
+import { RequestWithParams } from "../../../core/types/request";
+import { HTTP_STATUSES } from "../../../core/types/http-statuses";
 
 export const findPostController = async (
   req: RequestWithParams<GetPostModelById>,
