@@ -1,16 +1,28 @@
+import prettierPlugin from "eslint-plugin-prettier";
+import prettierConfig from "eslint-config-prettier";
+import typescriptPlugin from "@typescript-eslint/eslint-plugin";
+import typescriptParser from "@typescript-eslint/parser";
+
 export default [
   {
-    files: ["**/*.js"],
+    ignores: ["node_modules", "dist"],
+  },
+  {
+    files: ["**/*.ts"],
     languageOptions: {
-      ecmaVersion: 12,
+      ecmaVersion: "latest",
       sourceType: "module",
-      globals: {
-        window: true,
-        document: true,
-      },
+      parser: typescriptParser,
+    },
+    plugins: {
+      "@typescript-eslint": typescriptPlugin,
+      prettier: prettierPlugin,
     },
     rules: {
-      semi: ["error", "always"],
+      "prettier/prettier": "error",
+      "@typescript-eslint/no-unused-vars": "warn",
+      eqeqeq: ["error", "always"],
     },
   },
+  prettierConfig,
 ];

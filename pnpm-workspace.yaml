@@ -1,0 +1,7 @@
+ignoredBuiltDependencies:
+  - "@scarf/scarf"
+  - bcrypt
+
+onlyBuiltDependencies:
+  - mongodb-memory-server
+  - unrs-resolver
