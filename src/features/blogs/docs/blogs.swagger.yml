@@ -1,0 +1,422 @@
+openapi: 3.0.0
+info:
+  title: API Documentation
+  version: 1.0.0
+
+tags:
+  - name: Blogs
+    description: API for managing blogs
+  - name: Posts
+    description: API for managing posts within blogs
+
+paths:
+  /blogs:
+    get:
+      summary: Returns a list of blogs with pagination, sorting, and search
+      tags: [Blogs]
+      parameters:
+        - name: searchNameTerm
+          in: query
+          description: Search term for filtering blogs by name (contains, case-insensitive)
+          required: false
+          schema:
+            type: string
+            nullable: true
+            example: "tech"
+        - name: sortBy
+          in: query
+          description: Field to sort by
+          required: false
+          schema:
+            type: string
+            enum: [id, name, description, websiteUrl, createdAt]
+            default: createdAt
+        - name: sortDirection
+          in: query
+          description: Sorting direction
+          required: false
+          schema:
+            $ref: "#/components/schemas/SortDirection"
+        - name: pageNumber
+          in: query
+          description: Number of the page to return
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 1
+        - name: pageSize
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 10
+      responses:
+        200:
+          description: List of blogs returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatorBlogViewModel"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIErrorResult"
+
+    post:
+      summary: Create a new blog
+      tags: [Blogs]
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogInput"
+      responses:
+        201:
+          description: Blog successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogViewModel"
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIErrorResult"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIErrorResult"
+
+    delete:
+      summary: Delete all blogs
+      tags: [Blogs]
+      security:
+        - basicAuth: []
+      responses:
+        204:
+          description: All blogs deleted successfully
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIErrorResult"
+
+  /blogs/{id}:
+    get:
+      summary: Get a blog by its ID
+      tags: [Blogs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Blog found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogViewModel"
+        404:
+          description: Blog not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIErrorResult"
+
+    put:
+      summary: Update an existing blog by ID
+      tags: [Blogs]
+      security:
+        - basicAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogInput"
+      responses:
+        204:
+          description: Blog updated successfully
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIErrorResult"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIErrorResult"
+        404:
+          description: Blog not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIErrorResult"
+
+    delete:
+      summary: Delete a blog by ID
+      tags: [Blogs]
+      security:
+        - basicAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Blog deleted successfully
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIErrorResult"
+        404:
+          description: Blog not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIErrorResult"
+
+  /blogs/{id}/posts:
+    get:
+      summary: Get posts for a specific blog
+      tags: [Posts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [id, title, createdAt]
+            default: createdAt
+        - name: sortDirection
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/SortDirection"
+        - name: pageNumber
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        200:
+          description: Posts for this blog returned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pagesCount:
+                    type: integer
+                  page:
+                    type: integer
+                  pageSize:
+                    type: integer
+                  totalCount:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/BlogPostInput"
+
+    post:
+      summary: Create a post for the specified blog
+      tags: [Posts]
+      security:
+        - basicAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogPostInput"
+      responses:
+        201:
+          description: Post successfully created
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIErrorResult"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIErrorResult"
+        404:
+          description: Blog not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIErrorResult"
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+
+  schemas:
+    FieldError:
+      type: object
+      properties:
+        message:
+          type: string
+        field:
+          type: string
+
+    APIErrorResult:
+      type: object
+      properties:
+        errorsMessages:
+          type: array
+          items:
+            $ref: "#/components/schemas/FieldError"
+          nullable: true
+
+    PaginatorBlogViewModel:
+      type: object
+      required:
+        - pagesCount
+        - page
+        - pageSize
+        - totalCount
+        - items
+      properties:
+        pagesCount:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalCount:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/BlogViewModel"
+
+    BlogInput:
+      type: object
+      required:
+        - name
+        - description
+        - websiteUrl
+      properties:
+        name:
+          type: string
+          maxLength: 15
+          example: Tech Blog
+        description:
+          type: string
+          maxLength: 500
+          example: Blog about technology news
+        websiteUrl:
+          type: string
+          maxLength: 100
+          pattern: "^https://([a-zA-Z0-9_-]+\\.)+[a-zA-Z0-9_-]+(/[a-zA-Z0-9_-]+)*/?$"
+          example: "https://techblog.example.com"
+
+    BlogPostInput:
+      type: object
+      required:
+        - title
+        - shortDescription
+        - content
+      properties:
+        title:
+          type: string
+          maxLength: 30
+          example: New Tech Trends
+        shortDescription:
+          type: string
+          maxLength: 100
+          example: Summary of new tech trends
+        content:
+          type: string
+          maxLength: 1000
+          example: Full article content here...
+
+    BlogViewModel:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - websiteUrl
+        - createdAt
+        - isMembership
+      properties:
+        id:
+          type: string
+          example: "5f1a2b3c4d5e6f7g8h9i0j1k2"
+        name:
+          type: string
+          example: Tech Blog
+        description:
+          type: string
+          example: Blog about technology
+        websiteUrl:
+          type: string
+          example: "https://techblog.example.com"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-03-05T12:00:00Z"
+        isMembership:
+          type: boolean
+          description: True if user has not expired membership subscription to blog
+          example: true
+
+    SortDirection:
+      type: string
+      enum:
+        - asc
+        - desc

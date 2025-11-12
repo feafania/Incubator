@@ -1,0 +1,229 @@
+openapi: 3.0.0
+info:
+  title: Auth API Documentation
+  version: 1.0.0
+  description: >
+    API endpoints for user authentication, registration, and email confirmation.
+
+tags:
+  - name: Auth
+    description: Authentication and registration endpoints
+
+paths:
+  /auth/login:
+    post:
+      summary: Try login user to the system
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInputModel"
+      responses:
+        200:
+          description: Returns JWT-token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginSuccessViewModel"
+        400:
+          description: If the inputModel has incorrect values
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorListOutput"
+        401:
+          description: If the password or login or email is wrong
+
+  /auth/me:
+    get:
+      summary: Get information about current user
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeViewModel"
+        401:
+          description: Unauthorized
+
+  /auth/registration:
+    post:
+      summary: Registration in the system. Email with confirmation code will be sent to passed email address
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationInputModel"
+      responses:
+        204:
+          description: >
+            Input data is accepted. Email with confirmation code will be sent to passed email address.
+            Confirmation code should be inside link as query param, for example:
+            https://some-front.com/confirm-registration?code=yourcodehere
+        400:
+          description: >
+            If the inputModel has incorrect values (in particular if the user with the given email or login already exists)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorListOutput"
+
+  /auth/registration-confirmation:
+    post:
+      summary: Confirm registration
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationConfirmationInputModel"
+      responses:
+        204:
+          description: Email was verified. Account was activated
+        400:
+          description: If the confirmation code is incorrect, expired or already been applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorListOutput"
+
+  /auth/registration-email-resending:
+    post:
+      summary: Resend registration confirmation email
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailResendingInputModel"
+      responses:
+        204:
+          description: >
+            Input data is accepted. Email with confirmation code will be sent to passed email address.
+            Confirmation code should be inside link as query param, for example:
+            https://some-front.com/confirm-registration?code=yourcodehere
+        400:
+          description: >
+            If the inputModel has incorrect values or if email is already confirmed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorListOutput"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # === Login ===
+    LoginInputModel:
+      type: object
+      required:
+        - loginOrEmail
+        - password
+      properties:
+        loginOrEmail:
+          type: string
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          example: "12345678"
+
+    LoginSuccessViewModel:
+      type: object
+      required:
+        - accessToken
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    # === Me ===
+    MeViewModel:
+      type: object
+      required:
+        - email
+        - login
+        - userId
+      properties:
+        email:
+          type: string
+          example: "user@example.com"
+        login:
+          type: string
+          example: "johndoe"
+        userId:
+          type: string
+          example: "1234567890abcdef"
+
+    # === Registration ===
+    RegistrationInputModel:
+      type: object
+      required:
+        - login
+        - password
+        - email
+      properties:
+        login:
+          type: string
+          example: "Pb7nqAOVAJ"
+        password:
+          type: string
+          example: "string"
+        email:
+          type: string
+          format: email
+          example: "example@example.com"
+
+    RegistrationConfirmationInputModel:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          example: "string"
+
+    EmailResendingInputModel:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: "example@example.com"
+
+    # === Errors ===
+    ValidationErrorOutput:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Invalid email format"
+        field:
+          type: string
+          example: "email"
+
+    ValidationErrorListOutput:
+      type: object
+      properties:
+        errorsMessages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationErrorOutput"
