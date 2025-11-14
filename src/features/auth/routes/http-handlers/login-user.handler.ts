@@ -4,7 +4,9 @@ import { LoginRequestPayload } from "../request-payloads/login-request.payload";
 import { HTTP_STATUSES } from "../../../../core/types/http-statuses";
 import { authQueryService } from "../../application/auth.query.service";
 import { passwordHasher } from "../../../../core/infrastructure/crypto/password-hasher";
-import { jwtService } from "../../../../core/infrastructure/token/jwt";
+import { SETTINGS } from "../../../../core/settings/settings";
+import authService from "../../application/auth.service";
+import { TokenType } from "../../domain/token-type";
 
 export async function loginUserHandler(
   req: Request<{}, {}, LoginRequestPayload>,
@@ -28,10 +30,20 @@ export async function loginUserHandler(
       return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
     }
 
-    const token = jwtService.createToken(user.id);
+    const accessToken = authService.generateToken({ userId: user.id });
+    const refreshToken = authService.generateToken(
+      { userId: user.id },
+      TokenType.REFRESH,
+    );
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      maxAge: parseInt(String(SETTINGS.JWT_REFRESH_EXPIRY_PERIOD)) * 1000,
+    });
 
     return res.status(HTTP_STATUSES.OK_200).json({
-      accessToken: token,
+      accessToken: accessToken,
     });
   } catch (e: unknown) {
     return errorsHandler(e, res);

@@ -4,6 +4,7 @@ import { PostDBType } from "../features/posts/domain/posts";
 import { SETTINGS } from "../core/settings/settings";
 import { User } from "../features/users/domain/user";
 import { CommentEntity } from "../features/comments/domain/comment";
+import { RevokedToken } from "../features/auth/domain/revoked-token";
 
 export let client: MongoClient;
 
@@ -11,6 +12,7 @@ export let blogCollection: Collection<BlogDBType>;
 export let postCollection: Collection<PostDBType>;
 export let userCollection: Collection<User>;
 export let commentCollection: Collection<CommentEntity>;
+export let revokedTokenCollection: Collection<RevokedToken>;
 
 // Подключения к бд
 export async function runDB(url: string): Promise<void> {
@@ -29,6 +31,9 @@ export async function runDB(url: string): Promise<void> {
     userCollection = db.collection<User>(SETTINGS.COLLECTIONS.USERS);
     commentCollection = db.collection<CommentEntity>(
       SETTINGS.COLLECTIONS.COMMENTS,
+    );
+    revokedTokenCollection = db.collection<RevokedToken>(
+      SETTINGS.COLLECTIONS.REVOKED_TOKENS,
     );
 
     // Establish and verify connection

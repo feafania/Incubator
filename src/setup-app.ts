@@ -8,6 +8,7 @@ import { blogsRouter } from "./features/blogs/routes/blogs.router";
 import { usersRouter } from "./features/users/routes/users.route";
 import { authRouter } from "./features/auth/routes/auth.route";
 import { commentsRouter } from "./features/comments/routes/comments.route";
+import cookieParser from "cookie-parser";
 
 /**
  * Настраиваем routes, cors, swagger
@@ -15,6 +16,7 @@ import { commentsRouter } from "./features/comments/routes/comments.route";
  */
 export const setupApp = (app: Express) => {
   app.use(express.json()); // создание свойств-объектов body и query во всех реквестах
+  app.use(cookieParser());
   app.use(cors()); // разрешить любым фронтам делать запросы на наш бэк
 
   app.get("/", (req, res) => {

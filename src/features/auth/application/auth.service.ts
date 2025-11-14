@@ -8,13 +8,43 @@ import { ResendEmailCommand } from "./command-handlers/resend-email-commands";
 import { ConfirmRegistrationCommand } from "./command-handlers/registration-confirmation-commands";
 import { BadRequestError } from "../../../core/errors/bad-request.error";
 import { randomUUID } from "node:crypto";
+import { jwtService } from "../../../core/infrastructure/token/jwt";
+import { SETTINGS } from "../../../core/settings/settings";
+import { JwtConfig, JwtPayload } from "../../../core/types/jwt-token";
+import { TokenType } from "../domain/token-type";
+import { AuthRepository } from "../repositories/auth.repository";
+import { RevokedTokenDomainDto } from "../domain/revoked-token-domain.dto.ts";
+import { tokenHasher } from "../../../core/infrastructure/crypto/token-hasher";
 
 export class AuthService {
   private usersService: UsersService;
   private usersRepository: UsersRepository;
-  constructor(usersService?: UsersService, usersRepository?: UsersRepository) {
+  private authRepository: AuthRepository;
+  constructor(
+    usersService?: UsersService,
+    usersRepository?: UsersRepository,
+    authRepository?: AuthRepository,
+  ) {
     this.usersService = usersService ?? new UsersService();
     this.usersRepository = usersRepository ?? new UsersRepository();
+    this.authRepository = authRepository ?? new AuthRepository();
+  }
+
+  generateToken(payload: JwtPayload, tokenType: TokenType = TokenType.ACCESS) {
+    const configOptions: JwtConfig = {};
+    switch (tokenType) {
+      case TokenType.REFRESH: {
+        configOptions.expiresIn = SETTINGS.JWT_REFRESH_EXPIRY_PERIOD;
+        configOptions.secret = SETTINGS.JWT_REFRESH_SECRET;
+        break;
+      }
+      case TokenType.ACCESS:
+      default: {
+        configOptions.expiresIn = SETTINGS.JWT_ACCESS_EXPIRY_PERIOD;
+        configOptions.secret = SETTINGS.JWT_ACCESS_SECRET;
+      }
+    }
+    return jwtService.createToken(payload, configOptions);
   }
 
   async registerUser(command: RegisterUserCommand): Promise<void> {
@@ -76,6 +106,33 @@ export class AuthService {
     };
 
     await this.usersRepository.save(user);
+  }
+
+  async revokeToken(
+    token: string,
+    userId: string,
+    expiresAt: Date,
+  ): Promise<void> {
+    if (!token) throw new BadRequestError("Token not found", "refreshToken");
+    const user = await this.usersRepository.findByIdOrFail(userId);
+    if (!user) throw new BadRequestError("User not found", "userId");
+
+    const hash = tokenHasher.generateHash(token);
+    const revokedToken: RevokedTokenDomainDto = {
+      tokenHash: hash,
+      userId,
+      deviceId: null,
+      expiresAt,
+    };
+    await this.authRepository.addRevokedToken(revokedToken);
+  }
+
+  async isRefreshTokenRevoked(refreshToken: string) {
+    return this.authRepository.isTokenRevoked(refreshToken);
+  }
+
+  async deleteMany(): Promise<void> {
+    await this.authRepository.deleteMany();
   }
 }
 

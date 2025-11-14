@@ -11,12 +11,17 @@ import { meUserHandler } from "./http-handlers/me-user.handler";
 import { accessTokenGuardMiddleware } from "../../../auth/middlewares/access-token-guard.middleware";
 import {
   LOGIN_PATH,
+  LOGOUT_PATH,
   ME_PATH,
+  REFRESH_TOKEN_PATH,
   REGISTRATION_PATH,
 } from "../../../core/paths/paths";
 import { registrationHandler } from "./http-handlers/registration.handler";
 import { registrationEmailResendingHandler } from "./http-handlers/registration-email-resending.handler";
 import { registrationConfirmationHandler } from "./http-handlers/registration-confirmation.handler";
+import { refreshTokenGuardMiddleware } from "../../../auth/middlewares/refresh-token-guard.middleware";
+import { refreshTokenHandler } from "./http-handlers/refresh-token.handler";
+import { logoutHandler } from "./http-handlers/logout.handler";
 
 export const authRouter = Router({});
 
@@ -53,4 +58,18 @@ authRouter.post(
   registrationConfirmationPayloadValidation,
   inputValidationResultMiddleware,
   registrationConfirmationHandler,
+);
+
+authRouter.post(
+  `${REFRESH_TOKEN_PATH}`,
+  refreshTokenGuardMiddleware,
+  inputValidationResultMiddleware,
+  refreshTokenHandler,
+);
+
+authRouter.post(
+  `${LOGOUT_PATH}`,
+  refreshTokenGuardMiddleware,
+  inputValidationResultMiddleware,
+  logoutHandler,
 );
