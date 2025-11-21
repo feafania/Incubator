@@ -1,31 +1,18 @@
-// startApp + setup
-import express from "express";
-import { setupApp } from "./setup-app";
-import { SETTINGS } from "./core/settings/settings";
+import { VercelRequest, VercelResponse } from "@vercel/node";
+import app from "./app";
 import { runDB } from "./db/mongo.db";
-import { formattedDate } from "./core/utils/date.utils";
+import { SETTINGS } from "./core/settings/settings";
 
-const bootstrap = async () => {
-  const app = express(); // создать приложение
+declare global {
+  // каб TS не падаў памылку на __dbConnected
+  var __dbConnected: boolean | undefined;
+}
 
-  setupApp(app);
-
-  try {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (!global.__dbConnected) {
     await runDB(SETTINGS.MONGO_URL);
-  } catch {
-    console.log("Error starting server occurred");
-    return;
+    global.__dbConnected = true;
   }
 
-  app.listen(SETTINGS.PORT, "0.0.0.0", () => {
-    console.log(
-      "...server started in port " +
-        SETTINGS.PORT +
-        " at " +
-        formattedDate(new Date().getTime()),
-    );
-  });
-  return app;
-};
-
-bootstrap();
+  return app(req, res);
+}
