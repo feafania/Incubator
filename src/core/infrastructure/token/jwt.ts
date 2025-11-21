@@ -1,23 +1,26 @@
 import jwt, { SignOptions } from "jsonwebtoken";
 import { SETTINGS } from "../../settings/settings";
+import { JwtPayload, JwtConfig } from "../../types/jwt-token";
 
 type StringValue = `${number}${"s" | "m" | "h" | "d" | "w" | "y"}`;
 
 export const jwtService = {
-  createToken(userId: string, login?: string): string {
-    const payload: Record<string, unknown> = { userId };
-    if (login) payload.login = login;
+  createToken(claims: JwtPayload, jwtOptions?: JwtConfig): string {
+    const payload: Record<string, unknown> = { userId: claims.userId };
+    if (claims.deviceId) payload.deviceId = claims.deviceId;
+    if (claims.login) payload.login = claims.login;
 
-    const expiry = SETTINGS.JWT_EXPIRY_PERIOD;
+    const expiry = jwtOptions?.expiresIn ?? SETTINGS.JWT_ACCESS_EXPIRY_PERIOD;
+    const secret = jwtOptions?.secret ?? SETTINGS.JWT_ACCESS_SECRET;
 
     const expiresIn =
       typeof expiry === "string" && /^\d+$/.test(expiry)
-        ? (`${expiry}d` as StringValue)
+        ? (`${expiry}s` as StringValue)
         : (expiry as StringValue | number);
 
     const options: SignOptions = { expiresIn };
 
-    return jwt.sign(payload, SETTINGS.JWT_SECRET, options);
+    return jwt.sign(payload, secret, options);
   },
 
   decodeToken(token: string): any | null {
@@ -33,12 +36,24 @@ export const jwtService = {
     }
   },
 
-  verifyToken(token: string): { userId: string; login?: string } | null {
+  verifyToken(token: string, jwtOptions?: JwtConfig): JwtPayload | null {
     try {
-      return jwt.verify(token, SETTINGS.JWT_SECRET) as {
-        userId: string;
-        login?: string;
-      };
+      const secret = jwtOptions?.secret ?? SETTINGS.JWT_ACCESS_SECRET;
+      const verifiedPayload = jwt.verify(token, secret);
+      if (typeof verifiedPayload !== "object" || verifiedPayload === null) {
+        return null;
+      }
+      const payload: JwtPayload = { userId: verifiedPayload.userId };
+      if (verifiedPayload.deviceId) payload.deviceId = verifiedPayload.deviceId;
+      if (verifiedPayload.login) payload.login = verifiedPayload.login;
+
+      if (verifiedPayload.exp) {
+        payload.expiresAt = new Date(verifiedPayload.exp * 1000);
+      }
+      if (verifiedPayload.iat) {
+        payload.issuedAt = new Date(verifiedPayload.iat * 1000);
+      }
+      return payload;
     } catch (error) {
       console.error("Token verification error", error);
       return null;

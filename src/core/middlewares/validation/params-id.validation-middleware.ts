@@ -7,7 +7,7 @@ export const idValidation = param("id")
   .withMessage("ID must be a string") // Проверка, что это строка
   .trim()
   .notEmpty()
-  .withMessage("Comment Id cannot be empty");
+  .withMessage("Id cannot be empty");
 // .isMongoId()
 // .withMessage("Неверный формат ObjectId");
 

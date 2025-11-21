@@ -3,7 +3,7 @@ info:
   title: Auth API Documentation
   version: 1.0.0
   description: >
-    API endpoints for user authentication, registration, and email confirmation.
+    API endpoints for authentication, token refreshing, logout, registration and email confirmation.
 
 tags:
   - name: Auth
@@ -22,7 +22,9 @@ paths:
               $ref: "#/components/schemas/LoginInputModel"
       responses:
         200:
-          description: Returns JWT-token
+          description: >
+            Returns JWT accessToken (expired after 10 seconds) in body and JWT refreshToken
+            in cookie (http-only, secure) (expired after 20 seconds).
           content:
             application/json:
               schema:
@@ -34,7 +36,39 @@ paths:
               schema:
                 $ref: "#/components/schemas/ValidationErrorListOutput"
         401:
-          description: If the password or login or email is wrong
+          description: If password or login/email is wrong
+        429:
+          description: More than 5 attempts from one IP-address during 10 seconds
+
+  /auth/refresh-token:
+    post:
+      summary: Generate new pair of access and refresh tokens
+      description: >
+        Client must send valid refreshToken in cookie. After refreshing, old token is revoked.
+        Device LastActiveDate must be updated to issuedDate of the new refresh token.
+      tags: [Auth]
+      responses:
+        200:
+          description: >
+            Returns new pair: JWT accessToken (10s) in body, refreshToken (20s) in cookie.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginSuccessViewModel"
+        401:
+          description: Unauthorized
+
+  /auth/logout:
+    post:
+      summary: Logout user
+      description: >
+        Client must send refreshToken in cookie. Token will be revoked.
+      tags: [Auth]
+      responses:
+        204:
+          description: No Content
+        401:
+          description: Unauthorized
 
   /auth/me:
     get:
@@ -54,7 +88,9 @@ paths:
 
   /auth/registration:
     post:
-      summary: Registration in the system. Email with confirmation code will be sent to passed email address
+      summary: Registration in the system
+      description: >
+        Email with confirmation code will be sent to passed email address.
       tags: [Auth]
       requestBody:
         required: true
@@ -64,17 +100,15 @@ paths:
               $ref: "#/components/schemas/RegistrationInputModel"
       responses:
         204:
-          description: >
-            Input data is accepted. Email with confirmation code will be sent to passed email address.
-            Confirmation code should be inside link as query param, for example:
-            https://some-front.com/confirm-registration?code=yourcodehere
+          description: Email with confirmation code was sent
         400:
-          description: >
-            If the inputModel has incorrect values (in particular if the user with the given email or login already exists)
+          description: Incorrect input or user already exists
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ValidationErrorListOutput"
+        429:
+          description: More than 5 attempts from one IP-address during 10 seconds
 
   /auth/registration-confirmation:
     post:
@@ -88,13 +122,15 @@ paths:
               $ref: "#/components/schemas/RegistrationConfirmationInputModel"
       responses:
         204:
-          description: Email was verified. Account was activated
+          description: Email verified. Account activated.
         400:
-          description: If the confirmation code is incorrect, expired or already been applied
+          description: Code incorrect, expired or already used
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ValidationErrorListOutput"
+        429:
+          description: More than 5 attempts from one IP-address during 10 seconds
 
   /auth/registration-email-resending:
     post:
@@ -108,17 +144,15 @@ paths:
               $ref: "#/components/schemas/EmailResendingInputModel"
       responses:
         204:
-          description: >
-            Input data is accepted. Email with confirmation code will be sent to passed email address.
-            Confirmation code should be inside link as query param, for example:
-            https://some-front.com/confirm-registration?code=yourcodehere
+          description: Email sent
         400:
-          description: >
-            If the inputModel has incorrect values or if email is already confirmed
+          description: Incorrect input or email already confirmed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ValidationErrorListOutput"
+        429:
+          description: More than 5 attempts from one IP-address during 10 seconds
 
 components:
   securitySchemes:
@@ -128,7 +162,7 @@ components:
       bearerFormat: JWT
 
   schemas:
-    # === Login ===
+    # === LOGIN ===
     LoginInputModel:
       type: object
       required:
@@ -140,7 +174,6 @@ components:
           example: "user@example.com"
         password:
           type: string
-          format: password
           example: "12345678"
 
     LoginSuccessViewModel:
@@ -150,10 +183,9 @@ components:
       properties:
         accessToken:
           type: string
-          description: JWT access token
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          example: "eyJhbGciOiJIUzI1NiIs..."
 
-    # === Me ===
+    # === ME ===
     MeViewModel:
       type: object
       required:
@@ -171,7 +203,7 @@ components:
           type: string
           example: "1234567890abcdef"
 
-    # === Registration ===
+    # === REGISTRATION ===
     RegistrationInputModel:
       type: object
       required:
@@ -209,9 +241,12 @@ components:
           format: email
           example: "example@example.com"
 
-    # === Errors ===
+    # === ERRORS ===
     ValidationErrorOutput:
       type: object
+      required:
+        - message
+        - field
       properties:
         message:
           type: string
@@ -222,6 +257,8 @@ components:
 
     ValidationErrorListOutput:
       type: object
+      required:
+        - errorsMessages
       properties:
         errorsMessages:
           type: array

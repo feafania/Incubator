@@ -4,6 +4,9 @@ import postsService from "../../posts/application/posts.service";
 import blogsService from "../../blogs/application/blogs.service";
 import usersService from "../../users/application/users.service";
 import commentsService from "../../comments/application/comments.service";
+import authService from "../../auth/application/auth.service";
+import rateLimitService from "../../rate-limit/application/rate-limit.service";
+import sessionService from "../../auth/application/session.service";
 
 export const testingRouter = Router();
 
@@ -17,6 +20,9 @@ export const deleteAllData = async (
       postsService.deleteMany(),
       usersService.deleteMany(),
       commentsService.deleteMany(),
+      authService.deleteMany(),
+      rateLimitService.deleteMany(),
+      sessionService.deleteMany(),
     ]);
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
   } catch (error) {

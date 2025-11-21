@@ -4,6 +4,7 @@ import {
   BLOGS_PATH,
   COMMENTS_PATH,
   POSTS_PATH,
+  SECURITY_PATH,
   TESTING_PATH,
   USERS_PATH,
 } from "../paths/paths";
@@ -15,8 +16,10 @@ const mongoURI = process.env.MONGO_URL || "mongodb://0.0.0.0:27017"; //mongodb:/
 const dbName = process.env.DB_NAME || "blogsApi";
 const adminUsername = process.env.ADMIN_USERNAME || "admin";
 const adminPassword = process.env.ADMIN_PASSWORD || "qwerty";
-const jwtSecret = process.env.JWT_SECRET || "JWTSecret";
-const jwtExpityPeriod = process.env.JWT_EXPIRY_PERIOD || 300;
+const jwtAccessSecret = process.env.JWT_ACCESS_SECRET || "JWTAccessSecret";
+const jwtAccessExpiryPeriod = process.env.JWT_ACCESS_EXPIRY_PERIOD || 10;
+const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET || "JWTRefreshSecret";
+const jwtRefreshExpiryPeriod = process.env.JWT_REFRESH_EXPIRY_PERIOD || 20;
 const email = process.env.EMAIL || "myemail@tut.by";
 const emailPass = process.env.EMAIL_PASS || "mypassword";
 const smtpHost = process.env.SMTP_HOST || "smtp.yourdomain.com";
@@ -34,6 +37,7 @@ export const SETTINGS = {
     TESTS: TESTING_PATH,
     AUTH: AUTH_PATH,
     COMMENTS: COMMENTS_PATH,
+    SECURITY: SECURITY_PATH,
   },
   ADMIN_AUTH: `${adminUsername}:${adminPassword}`, //YWRtaW46cXdlcnR5 (base64)
   ADMIN_USERNAME: adminUsername,
@@ -45,9 +49,14 @@ export const SETTINGS = {
     POSTS: "posts",
     USERS: "users",
     COMMENTS: "comments",
+    REVOKED_TOKENS: "revokedTokens",
+    RATE_LIMIT: "rateLimit",
+    SESSIONS: "sessions",
   },
-  JWT_SECRET: jwtSecret,
-  JWT_EXPIRY_PERIOD: jwtExpityPeriod,
+  JWT_ACCESS_SECRET: jwtAccessSecret,
+  JWT_ACCESS_EXPIRY_PERIOD: jwtAccessExpiryPeriod,
+  JWT_REFRESH_SECRET: jwtRefreshSecret,
+  JWT_REFRESH_EXPIRY_PERIOD: jwtRefreshExpiryPeriod,
   EMAIL: email,
   EMAIL_PASS: emailPass,
   SMTP_HOST: smtpHost,

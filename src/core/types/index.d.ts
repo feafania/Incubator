@@ -11,6 +11,9 @@ declare global {
   namespace Express {
     export interface Request {
       userId: string | null;
+      issuedAt: Date | null;
+      expiresAt: Date | null;
+      deviceId: string | null;
     }
   }
 }

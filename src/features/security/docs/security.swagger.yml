@@ -1,0 +1,91 @@
+openapi: 3.0.0
+info:
+  title: Security Devices API
+  version: 1.0.0
+
+tags:
+  - name: SecurityDevices
+    description: API for managing user's active device sessions
+
+paths:
+  /security/devices:
+    get:
+      summary: Returns all devices with active sessions for current user
+      tags: [SecurityDevices]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DeviceViewModel"
+        401:
+          description: Unauthorized
+
+    delete:
+      summary: Terminate all other (exclude current) device's sessions
+      tags: [SecurityDevices]
+      security:
+        - BearerAuth: []
+      responses:
+        204:
+          description: No Content
+        401:
+          description: Unauthorized
+
+  /security/devices/{deviceId}:
+    delete:
+      summary: Terminate specified device session
+      tags: [SecurityDevices]
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: deviceId
+          required: true
+          description: Id of session that will be terminated
+          schema:
+            type: string
+      responses:
+        204:
+          description: No Content
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden — trying to delete device of another user
+        404:
+          description: Not Found
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    DeviceViewModel:
+      type: object
+      required:
+        - ip
+        - title
+        - lastActiveDate
+        - deviceId
+      properties:
+        ip:
+          type: string
+          example: "192.168.1.10"
+        title:
+          type: string
+          example: "Chrome on MacOS"
+        lastActiveDate:
+          type: string
+          format: date-time
+          example: "2025-10-12T10:20:45.000Z"
+        deviceId:
+          type: string
+          example: "b4e2fdf3-0b92-4de6-9c82-2d79a6f6c1d2"

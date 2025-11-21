@@ -6,6 +6,7 @@ import { DomainError } from "./domain.error";
 import { FieldError, OutputErrorsType } from "./types/errors";
 import { BadRequestError } from "./bad-request.error";
 import { ForbiddenError } from "./forbidden.error";
+import { TooManyRequestsError } from "./too-many-requests.error";
 
 export function errorsHandler(error: unknown, res: Response): void {
   if (error instanceof RepositoryNotFoundError) {
@@ -58,6 +59,21 @@ export function errorsHandler(error: unknown, res: Response): void {
 
   if (error instanceof ForbiddenError) {
     const httpStatus = HTTP_STATUSES.FORBIDDEN_403;
+    res.status(httpStatus).send(
+      createErrorMessages([
+        {
+          status: httpStatus,
+          detail: error.message,
+        },
+      ]),
+    );
+
+    return;
+  }
+
+  if (error instanceof TooManyRequestsError) {
+    const httpStatus = HTTP_STATUSES.TOO_MANY_REQUESTS_429;
+
     res.status(httpStatus).send(
       createErrorMessages([
         {
