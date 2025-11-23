@@ -33,7 +33,7 @@ export class SessionEntity {
     return new SessionEntity({
       userId: dto.userId,
       deviceId: dto.deviceId,
-      issuedAt: truncateDateToSeconds(),
+      issuedAt: dto.issuedAt ?? truncateDateToSeconds(),
       deviceName: dto.deviceName,
       ip: dto.ip,
       expiresAt: dto.expiresAt,

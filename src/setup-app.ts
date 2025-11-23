@@ -20,6 +20,7 @@ export const setupApp = (app: Express) => {
   app.use(express.json()); // создание свойств-объектов body и query во всех реквестах
   app.use(cookieParser());
   app.use(cors()); // разрешить любым фронтам делать запросы на наш бэк
+  app.set("trust proxy", true); // для получения корректного ip-адреса из req.ip
 
   app.get("/", (req, res) => {
     // эндпоинт, который будет показывать на верселе какая версия бэкэнда сейчас залита

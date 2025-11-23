@@ -19,12 +19,13 @@ export class SessionService {
   }
 
   async update(command: UpdateSessionCommand): Promise<void> {
-    const { deviceId, issuedAt, ip, expiresAt } = command;
+    const { deviceId, issuedAt, ip, deviceName, expiresAt } = command;
     const newCommand = { issuedAt, ip, expiresAt };
 
     const session = await this.sessionRepository.findByDeviceId(deviceId);
 
     session.update(newCommand);
+    session.updateDeviceInfo({ deviceName });
 
     await this.sessionRepository.save(session);
 
@@ -42,15 +43,25 @@ export class SessionService {
 
   async isSessionValid(deviceId: string, issuedAt: Date): Promise<boolean> {
     try {
-      const session =
-        await this.sessionRepository.findByDeviceIdAndIssuedAtOrFail(
-          deviceId,
-          issuedAt,
-        );
+      await this.sessionRepository.findByDeviceIdAndIssuedAtOrFail(
+        deviceId,
+        issuedAt,
+      );
       return true;
     } catch {
       return false;
     }
+  }
+
+  async findExistingSession(
+    userId: string,
+    deviceId: string,
+  ): Promise<SessionEntity | null> {
+    const session = await this.sessionRepository.findExistingSession(
+      userId,
+      deviceId,
+    );
+    return session;
   }
 }
 

@@ -1,7 +1,4 @@
 import { RateLimitRepository } from "../repositories/rate-limit.repository";
-import { ObjectId } from "mongodb";
-import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
-import { rateLimitCollection } from "../../../db/mongo.db";
 
 import { RegisterRequestCommand } from "./command-handlers/register-request-commands";
 import { RateLimit } from "../domain/rate-limit";
@@ -38,24 +35,7 @@ export class RateLimitService {
   }
 
   async delete(id: string): Promise<void> {
-    let objectId: ObjectId;
-
-    try {
-      objectId = new ObjectId(id);
-    } catch {
-      throw new RepositoryNotFoundError("User not exist");
-    }
-
-    const deleteResult = await rateLimitCollection.deleteOne({
-      _id: objectId,
-    });
-
-    if (deleteResult.deletedCount < 1) {
-      console.log("No request for delete");
-      throw new RepositoryNotFoundError("Request not exist");
-    }
-
-    return;
+    await this.rateLimitRepository.delete(id);
   }
 
   async deleteMany(): Promise<void> {

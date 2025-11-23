@@ -29,15 +29,21 @@ export const refreshTokenGuardMiddleware = async (
       configOptions,
     );
 
-    if (!payload || !payload.userId) {
+    if (
+      !payload ||
+      !payload.userId ||
+      !payload.deviceId ||
+      !payload.expiresAt ||
+      !payload.issuedAt
+    ) {
       res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
       return;
     }
 
     req.userId = payload.userId;
-    req.deviceId = payload.deviceId ?? null;
-    req.expiresAt = payload.expiresAt ?? null;
-    req.issuedAt = payload.issuedAt ?? null;
+    req.deviceId = payload.deviceId;
+    req.expiresAt = payload.expiresAt;
+    req.issuedAt = payload.issuedAt;
 
     next();
   } catch (e) {

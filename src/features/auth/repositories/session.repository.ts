@@ -42,6 +42,15 @@ export class SessionRepository {
     return SessionEntity.reconstitute(session);
   }
 
+  async findExistingSession(
+    userId: string,
+    deviceId: string,
+  ): Promise<WithId<SessionEntity> | null> {
+    const session = await sessionCollection.findOne({ deviceId, userId });
+    if (!session) return null;
+    return SessionEntity.reconstitute(session);
+  }
+
   async save(session: SessionEntity): Promise<SessionEntity> {
     if (!session._id) {
       const insertResult = await sessionCollection.insertOne(session);
@@ -96,8 +105,8 @@ export class SessionRepository {
     await sessionCollection.deleteMany({});
   }
 
-  async deleteByDeviceId(deviceId: string) {
-    return sessionCollection.deleteOne({ deviceId });
+  async deleteByUserIdAndDeviceId(userId: string, deviceId: string) {
+    return sessionCollection.deleteMany({ userId, deviceId });
   }
 
   async deleteAllByUserId(userId: string, excludeDevices: string[]) {

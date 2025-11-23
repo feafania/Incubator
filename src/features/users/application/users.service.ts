@@ -11,6 +11,8 @@ import { UserDomainDto } from "../domain/user-domain.dto";
 import { User } from "../domain/user";
 import { randomUUID } from "node:crypto";
 import { SETTINGS } from "../../../core/settings/settings";
+import {WithId} from "mongodb";
+import {userCollection} from "../../../db/mongo.db";
 
 export class UsersService {
   private usersRepository: UsersRepository;
@@ -79,6 +81,14 @@ export class UsersService {
 
   async deleteMany(): Promise<void> {
     await this.usersRepository.deleteMany();
+  }
+
+  async findByLogin(login: string): Promise<WithId<User> | null> {
+    return this.usersRepository.findByLogin(login);
+  }
+
+  async findByEmail(email: string): Promise<WithId<User> | null> {
+    return this.usersRepository.findByLogin(email);
   }
 }
 

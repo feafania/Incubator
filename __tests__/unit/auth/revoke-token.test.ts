@@ -6,6 +6,11 @@ import { usersRepositoryMock } from "../../__mocks__/users.repository.mock";
 
 describe("AuthService - token methods", () => {
   let authService: AuthService;
+  const payload = {
+    userId: "user1",
+    deviceId: "dev1",
+    expiresAt: new Date(),
+  };
 
   beforeEach(() => {
     authService = new AuthService(
@@ -26,33 +31,32 @@ describe("AuthService - token methods", () => {
 
   describe("revokeToken", () => {
     it("should throw error if token not provided", async () => {
-      await expect(
-        authService.revokeToken("", "user1", new Date()),
-      ).rejects.toThrow(BadRequestError);
+      await expect(authService.revokeToken("", payload)).rejects.toThrow(
+        BadRequestError,
+      );
     });
 
     it("should throw error if user not found", async () => {
       usersRepositoryMock.findByIdOrFail.mockRejectedValue(
         new BadRequestError("User not found", "userId"),
       );
-      await expect(
-        authService.revokeToken("token1", "user1", new Date()),
-      ).rejects.toThrow(BadRequestError);
+      await expect(authService.revokeToken("token1", payload)).rejects.toThrow(
+        BadRequestError,
+      );
     });
 
     it("should call addRevokedToken with correct hash and data", async () => {
       const fakeUser = { _id: "user1" };
       usersRepositoryMock.findByIdOrFail.mockResolvedValue(fakeUser as any);
 
-      const expiresAt = new Date();
-      await authService.revokeToken("token1", "user1", expiresAt);
+      await authService.revokeToken("token1", payload);
 
       expect(tokenHasher.generateHash).toHaveBeenCalledWith("token1");
       expect(authRepositoryMock.addRevokedToken).toHaveBeenCalledWith({
         tokenHash: "hashed-token1",
-        userId: "user1",
-        deviceId: null,
-        expiresAt,
+        userId: payload.userId,
+        deviceId: payload.deviceId,
+        expiresAt: payload.expiresAt,
       });
     });
   });

@@ -114,8 +114,27 @@ export class AuthService {
     accessToken: string;
     refreshToken: string;
   }> {
+    const refreshTokenConfig = this.getTokenConfig(TokenType.REFRESH);
+    let deviceId: string | null = "";
+
+    if (req.cookies?.refreshToken) {
+      const token = req.cookies.refreshToken;
+      const payload = jwtService.verifyToken(token, refreshTokenConfig);
+      if (payload && payload.userId && payload.expiresAt) {
+        if (userId === payload.userId) {
+          deviceId = payload.deviceId ?? null;
+          await this.revokeToken(token, {
+            userId,
+            deviceId,
+            expiresAt: payload.expiresAt,
+          });
+        }
+      }
+    }
+
     // 1. Device info
-    const { deviceId, deviceName, ip } = extractDeviceInfo(req);
+    const { deviceId: newDeviceId, deviceName, ip } = extractDeviceInfo(req);
+    deviceId = deviceId ? deviceId : newDeviceId;
 
     // 2. Tokens
     const accessToken = this.generateToken({ userId });
@@ -125,22 +144,34 @@ export class AuthService {
     );
 
     // 3. Decode refresh payload
-    const payload = jwtService.verifyToken(
-      refreshToken,
-      this.getTokenConfig(TokenType.REFRESH),
-    );
+    const payload = jwtService.verifyToken(refreshToken, refreshTokenConfig);
     if (!payload) throw new Error("Invalid refresh token");
 
-    // 4. Create session
-    await this.sessionService.create({
+    const existing = await this.sessionService.findExistingSession(
       userId,
       deviceId,
-      deviceName,
-      ip,
-      issuedAt:
-        payload.issuedAt ?? truncateDateToSeconds(),
-      expiresAt: payload.expiresAt ?? new Date(),
-    });
+    );
+
+    if (existing) {
+      // 3. Абнавіць issuedAt
+      await this.sessionService.update({
+        ...existing,
+        issuedAt: payload.issuedAt ?? truncateDateToSeconds(),
+        deviceName,
+        ip,
+        expiresAt: payload.expiresAt ?? new Date(),
+      });
+    } else {
+      // 4. Create session
+      await this.sessionService.create({
+        userId,
+        deviceId,
+        deviceName,
+        ip,
+        issuedAt: payload.issuedAt ?? truncateDateToSeconds(),
+        expiresAt: payload.expiresAt ?? new Date(),
+      });
+    }
 
     // 5. Return everything to handler
     return { accessToken, refreshToken };
@@ -151,7 +182,7 @@ export class AuthService {
     deviceId: string,
     req: RequestWithBody<any>,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const { ip } = extractDeviceInfo(req);
+    const { ip, deviceName } = extractDeviceInfo(req);
 
     const accessToken = this.generateToken({ userId });
     const refreshToken = this.generateToken(
@@ -165,53 +196,54 @@ export class AuthService {
     );
     if (!payload) throw new Error("Invalid refresh token");
 
-    const session = await this.sessionRepository.findByDeviceId(deviceId);
-    session.update({
-      issuedAt: payload.issuedAt ?? truncateDateToSeconds(),
-      ip: ip,
-      expiresAt: payload.expiresAt ?? new Date(),
-    });
+    const existing = await this.sessionRepository.findByDeviceId(deviceId);
+    if (existing) {
+      existing.update({
+        issuedAt: payload.issuedAt ?? truncateDateToSeconds(),
+        ip: ip,
+        expiresAt: payload.expiresAt ?? new Date(),
+      });
 
-    const updateCommand: UpdateSessionCommand = {
-      deviceId: session.deviceId,
-      issuedAt: session.issuedAt,
-      ip: session.ip,
-      expiresAt: session.expiresAt,
-    };
+      const { userId: sessionUserId, ...rest } = existing;
+      const updateCommand: UpdateSessionCommand = {
+        ...rest,
+      };
 
-    await this.sessionService.update(updateCommand);
+      await this.sessionService.update(updateCommand);
+    } else {
+      await this.sessionService.create({
+        userId,
+        deviceId,
+        deviceName,
+        ip,
+        issuedAt: payload.issuedAt ?? truncateDateToSeconds(),
+        expiresAt: payload.expiresAt ?? new Date(),
+      });
+    }
 
     return { accessToken, refreshToken };
   }
 
   async revokeToken(
     token: string,
-    userId: string,
-    expiresAt: Date,
+    payload: Omit<RevokedTokenDomainDto, "tokenHash">,
   ): Promise<void> {
     if (!token) throw new BadRequestError("Token not found", "refreshToken");
+    const userId = payload.userId;
     const user = await this.usersRepository.findByIdOrFail(userId);
     if (!user) throw new BadRequestError("User not found", "userId");
 
-    const payload = jwtService.verifyToken(
-      token,
-      this.getTokenConfig(TokenType.REFRESH),
-    );
-    if (!payload || !payload.deviceId) {
-      throw new BadRequestError("Invalid token", "refreshToken");
-    }
-
     const deviceId = payload.deviceId;
+    if (!deviceId) throw new BadRequestError("Wrong tpken", "deviceId");
 
     const hash = tokenHasher.generateHash(token);
     const revokedToken: RevokedTokenDomainDto = {
       tokenHash: hash,
       userId,
       deviceId,
-      expiresAt,
+      expiresAt: payload.expiresAt,
     };
     await this.authRepository.addRevokedToken(revokedToken);
-    await this.sessionRepository.deleteByDeviceId(deviceId);
   }
 
   async isRefreshTokenRevoked(refreshToken: string) {

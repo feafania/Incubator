@@ -6,12 +6,16 @@ import authService from "../../application/auth.service";
 
 export async function refreshTokenHandler(req: Request, res: Response) {
   try {
-    const userId = req.userId;
-    const expiresAt = req.expiresAt;
+    const userId = req.userId!;
+    const expiresAt = req.expiresAt!;
     const deviceId = req.deviceId;
     const oldRefreshToken = req.cookies.refreshToken;
 
-    await authService.revokeToken(oldRefreshToken, userId!, expiresAt!);
+    await authService.revokeToken(oldRefreshToken, {
+      userId,
+      deviceId,
+      expiresAt,
+    });
 
     const { accessToken, refreshToken } = await authService.refreshSession(
       userId!,
