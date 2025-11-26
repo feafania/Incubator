@@ -15,3 +15,7 @@ export const REGISTRATION_PATH = {
 };
 export const SECURITY_PATH = "/security";
 export const DEVICES_PATH = "/devices";
+export const PASSWORD_PATH = {
+  newPassword: "/new-password",
+  passwordRecovery: "/password-recovery",
+};

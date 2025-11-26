@@ -29,6 +29,7 @@ export const nodemailerService = {
       to: email,
       subject,
       html: template(code), // html body
+      encoding: "utf-8",
     });
 
     console.log("Message sent: %s", info.messageId);

@@ -21,6 +21,9 @@ import extractDeviceInfo from "../../../core/helpers/extract-device-info";
 import { SessionRepository } from "../repositories/session.repository";
 import { UpdateSessionCommand } from "./command-handlers/session-commands";
 import { truncateDateToSeconds } from "../../../core/helpers/truncate-date-to-seconds";
+import { addHours, addMinutes } from "date-fns";
+import { UpdatePasswordCommand } from "./command-handlers/update-password-commands";
+import { passwordHasher } from "../../../core/infrastructure/crypto/password-hasher";
 
 export class AuthService {
   private usersService: UsersService;
@@ -75,6 +78,11 @@ export class AuthService {
     const user = await this.usersRepository.findByIdOrFail(userId);
     if (!user) throw new BadRequestError("User not found", "email");
     user.emailConfirmation.confirmationCode = randomUUID();
+    user.emailConfirmation.expiresAt = addHours(
+      new Date(),
+      SETTINGS.REGISTRATION_CODE_LIFE,
+    );
+
     await this.usersRepository.save(user);
 
     const resendingEmailConfirmation = {
@@ -103,6 +111,51 @@ export class AuthService {
       ...user.emailConfirmation,
       isConfirmed: true,
     };
+
+    await this.usersRepository.save(user);
+  }
+
+  async sendPasswordRecoveryEmail(command: ResendEmailCommand): Promise<void> {
+    const { id: userId } = command;
+
+    const user = await this.usersRepository.findByIdOrFail(userId);
+
+    if (!user.passwordRecovery) {
+      user.passwordRecovery = {
+        recoveryCode: "",
+        expiresAt: new Date(),
+      };
+    }
+
+    user.passwordRecovery.recoveryCode = randomUUID();
+    user.passwordRecovery.expiresAt = addMinutes(
+      new Date(),
+      SETTINGS.PASSWORD_CODE_LIFE,
+    );
+    await this.usersRepository.save(user);
+
+    const recoveryPasswordEmail = {
+      email: user.email,
+      template: emailTemplates.passwordRecoveryEmail,
+      code: user.passwordRecovery.recoveryCode,
+      subject: emailSubjects.recoveryPassword,
+    };
+    // setImmediate(async () => {
+    try {
+      await nodemailerService.sendEmail(recoveryPasswordEmail);
+    } catch (error) {
+      console.error("Error resending email:", error);
+    }
+    // });
+  }
+
+  async updatePassword(command: UpdatePasswordCommand): Promise<void> {
+    const { id: userId } = command;
+
+    const user = await this.usersRepository.findByIdOrFail(userId);
+    if (!user) throw new BadRequestError("User not found", "code");
+    user.passwordHash = await passwordHasher.generateHash(command.password);
+    user.passwordRecovery.recoveryCode = "";
 
     await this.usersRepository.save(user);
   }

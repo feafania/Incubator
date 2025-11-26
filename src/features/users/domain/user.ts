@@ -2,6 +2,7 @@ import { ObjectId, WithId } from "mongodb";
 import { UserDomainDto } from "./user-domain.dto";
 import { ClassFieldsOnly } from "../../../core/types/fields-only";
 import { EmailConfirmationDomainDto } from "./email-confirmation-domain.dto";
+import { PasswordRecoveryDomainDto } from "./password-recovery-domain.dto";
 
 export class User {
   _id?: ObjectId;
@@ -9,6 +10,7 @@ export class User {
   email: string;
   passwordHash: string;
   emailConfirmation: EmailConfirmationDomainDto;
+  passwordRecovery: PasswordRecoveryDomainDto;
   createdAt: Date;
   updatedAt: Date;
 
@@ -17,6 +19,7 @@ export class User {
     this.email = dto.email;
     this.passwordHash = dto.passwordHash;
     this.emailConfirmation = dto.emailConfirmation;
+    this.passwordRecovery = dto.passwordRecovery;
 
     this.createdAt = dto.createdAt;
     this.updatedAt = dto.updatedAt;
@@ -35,6 +38,10 @@ export class User {
         confirmationCode: "",
         expiresAt: new Date(),
         isConfirmed: true,
+      },
+      passwordRecovery: dto.passwordRecovery ?? {
+        recoveryCode: "",
+        expiresAt: new Date(),
       },
 
       createdAt: new Date(),

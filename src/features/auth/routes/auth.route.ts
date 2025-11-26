@@ -2,6 +2,8 @@ import { Router } from "express";
 import { inputValidationResultMiddleware } from "../../../core/middlewares/validation/input-validtion-result.middleware";
 import {
   loginUserPayloadValidation,
+  newPasswordRequestPayloadValidation,
+  passwordRecoveryRequestPayloadValidation,
   registrationConfirmationPayloadValidation,
   registrationEmailResendingPayloadValidation,
   registrationRequestPayloadValidation,
@@ -12,7 +14,7 @@ import { accessTokenGuardMiddleware } from "../../../auth/middlewares/access-tok
 import {
   LOGIN_PATH,
   LOGOUT_PATH,
-  ME_PATH,
+  ME_PATH, PASSWORD_PATH,
   REFRESH_TOKEN_PATH,
   REGISTRATION_PATH,
 } from "../../../core/paths/paths";
@@ -24,6 +26,8 @@ import { refreshTokenHandler } from "./http-handlers/refresh-token.handler";
 import { logoutHandler } from "./http-handlers/logout.handler";
 import { rateLimitMiddleware } from "../../rate-limit/middlewares/rate-limit.middleware";
 import { refreshSessionGuardMiddleware } from "../../../core/refresh-session-guard.middleware";
+import { passwordRecoveryHandler } from "./http-handlers/password-recovery.handler";
+import { newPasswordHandler } from "./http-handlers/new-password.handler";
 
 export const authRouter = Router({});
 
@@ -80,4 +84,20 @@ authRouter.post(
   refreshSessionGuardMiddleware,
   inputValidationResultMiddleware,
   logoutHandler,
+);
+
+authRouter.post(
+  `${PASSWORD_PATH.passwordRecovery}`,
+  rateLimitMiddleware,
+  passwordRecoveryRequestPayloadValidation,
+  inputValidationResultMiddleware,
+  passwordRecoveryHandler,
+);
+
+authRouter.post(
+  `${PASSWORD_PATH.newPassword}`,
+  rateLimitMiddleware,
+  newPasswordRequestPayloadValidation,
+  inputValidationResultMiddleware,
+  newPasswordHandler,
 );

@@ -26,6 +26,7 @@ const smtpHost = process.env.SMTP_HOST || "smtp.yourdomain.com";
 const smtpPort = +(process.env.SMTP_PORT || 587);
 const smtpSecure = process.env.SMTP_SECURE === "true";
 const registrationCodeLife = +(process.env.REGISTRATION_CODE_LIFE || 1); // У гадзінах
+const passwordCodeLife = +(process.env.PASSWORD_CODE_LIFE || 10); // У хвілінах
 
 export const SETTINGS = {
   // все хардкодные значения должны быть здесь, для удобства их изменения
@@ -63,4 +64,5 @@ export const SETTINGS = {
   SMTP_PORT: smtpPort,
   SMTP_SECURE: smtpSecure,
   REGISTRATION_CODE_LIFE: registrationCodeLife,
+  PASSWORD_CODE_LIFE: passwordCodeLife,
 };

@@ -10,7 +10,6 @@ declare global {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!global.__dbConnected) {
-    console.log("Mongo URL:", SETTINGS.MONGO_URL);
     await runDB(SETTINGS.MONGO_URL);
     global.__dbConnected = true;
   }

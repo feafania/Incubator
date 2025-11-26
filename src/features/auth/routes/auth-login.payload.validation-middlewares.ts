@@ -22,36 +22,46 @@ const emailValidation = body("email")
   .isString()
   .withMessage("Email must be a string")
   .trim()
-  .matches(/^[\w.+-]+@([\w-]+\.)+[\w-]{2,}$/)
+  .matches(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/)
   .withMessage("Email format is invalid");
 
-const passwordValidation = body("password")
-  .isString()
-  .withMessage("Password must be a string")
-  .trim()
-  .isLength({ min: 6, max: 20 })
-  .withMessage("Password length must be between 6 and 20 characters");
+const passwordValidation = (fieldName: string) => {
+  return body(fieldName)
+    .isString()
+    .withMessage(`${fieldName} must be a string`)
+    .trim()
+    .isLength({ min: 6, max: 20 })
+    .withMessage(`${fieldName} length must be between 6 and 20 characters`);
+};
 
-const confirmationcodeValidation = body("code")
-  .isString()
-  .withMessage("Confirmation code must be a string")
-  .trim()
-  .notEmpty()
-  .withMessage("Confirmation code cannot be empty");
+const codeValidation = (fieldName: string) => {
+  return body(fieldName)
+    .isString()
+    .withMessage(`${fieldName} must be a string`)
+    .trim()
+    .notEmpty()
+    .withMessage(`${fieldName} cannot be empty`);
+};
 
 export const loginUserPayloadValidation = [
   loginOrEmailValidation,
-  passwordValidation,
+  passwordValidation("password"),
 ];
 
 export const registrationRequestPayloadValidation = [
   loginValidation,
-  passwordValidation,
+  passwordValidation("password"),
   emailValidation,
 ];
 
 export const registrationEmailResendingPayloadValidation = [emailValidation];
 
 export const registrationConfirmationPayloadValidation = [
-  confirmationcodeValidation,
+  codeValidation("code"),
+];
+
+export const passwordRecoveryRequestPayloadValidation = [emailValidation];
+export const newPasswordRequestPayloadValidation = [
+  passwordValidation("newPassword"),
+  codeValidation("recoveryCode"),
 ];

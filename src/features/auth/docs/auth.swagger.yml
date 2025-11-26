@@ -3,11 +3,12 @@ info:
   title: Auth API Documentation
   version: 1.0.0
   description: >
-    API endpoints for authentication, token refreshing, logout, registration and email confirmation.
+    API endpoints for authentication, token refreshing, logout, registration,
+    email confirmation, password recovery and new password confirmation.
 
 tags:
   - name: Auth
-    description: Authentication and registration endpoints
+    description: Authentication, registration and password recovery endpoints
 
 paths:
   /auth/login:
@@ -43,14 +44,12 @@ paths:
   /auth/refresh-token:
     post:
       summary: Generate new pair of access and refresh tokens
+      tags: [Auth]
       description: >
         Client must send valid refreshToken in cookie. After refreshing, old token is revoked.
-        Device LastActiveDate must be updated to issuedDate of the new refresh token.
-      tags: [Auth]
       responses:
         200:
-          description: >
-            Returns new pair: JWT accessToken (10s) in body, refreshToken (20s) in cookie.
+          description: Returns new accessToken and refreshToken
           content:
             application/json:
               schema:
@@ -61,9 +60,8 @@ paths:
   /auth/logout:
     post:
       summary: Logout user
-      description: >
-        Client must send refreshToken in cookie. Token will be revoked.
       tags: [Auth]
+      description: Client must send refreshToken in cookie. Token will be revoked.
       responses:
         204:
           description: No Content
@@ -89,9 +87,9 @@ paths:
   /auth/registration:
     post:
       summary: Registration in the system
+      tags: [Auth]
       description: >
         Email with confirmation code will be sent to passed email address.
-      tags: [Auth]
       requestBody:
         required: true
         content:
@@ -154,6 +152,45 @@ paths:
         429:
           description: More than 5 attempts from one IP-address during 10 seconds
 
+  /hometask_10/api/auth/password-recovery:
+    post:
+      summary: Password recovery via Email confirmation
+      description: >
+        Email should be sent with RecoveryCode inside.
+        Even if email is not registered, response is 204 (to prevent user detection).
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordRecoveryInputModel"
+      responses:
+        204:
+          description: Email sent (or skipped if user unknown)
+        400:
+          description: Invalid email
+        429:
+          description: More than 5 attempts from one IP-address during 10 seconds
+
+  /hometask_10/api/auth/new-password:
+    post:
+      summary: Confirm password recovery and set new password
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewPasswordInputModel"
+      responses:
+        204:
+          description: Password successfully changed
+        400:
+          description: Incorrect input or recovery code invalid/expired
+        429:
+          description: More than 5 attempts from one IP-address during 10 seconds
+
 components:
   securitySchemes:
     bearerAuth:
@@ -162,7 +199,6 @@ components:
       bearerFormat: JWT
 
   schemas:
-    # === LOGIN ===
     LoginInputModel:
       type: object
       required:
@@ -171,10 +207,8 @@ components:
       properties:
         loginOrEmail:
           type: string
-          example: "user@example.com"
         password:
           type: string
-          example: "12345678"
 
     LoginSuccessViewModel:
       type: object
@@ -183,9 +217,7 @@ components:
       properties:
         accessToken:
           type: string
-          example: "eyJhbGciOiJIUzI1NiIs..."
 
-    # === ME ===
     MeViewModel:
       type: object
       required:
@@ -195,15 +227,11 @@ components:
       properties:
         email:
           type: string
-          example: "user@example.com"
         login:
           type: string
-          example: "johndoe"
         userId:
           type: string
-          example: "1234567890abcdef"
 
-    # === REGISTRATION ===
     RegistrationInputModel:
       type: object
       required:
@@ -213,14 +241,11 @@ components:
       properties:
         login:
           type: string
-          example: "Pb7nqAOVAJ"
         password:
           type: string
-          example: "string"
         email:
           type: string
           format: email
-          example: "example@example.com"
 
     RegistrationConfirmationInputModel:
       type: object
@@ -229,7 +254,6 @@ components:
       properties:
         code:
           type: string
-          example: "string"
 
     EmailResendingInputModel:
       type: object
@@ -239,9 +263,30 @@ components:
         email:
           type: string
           format: email
-          example: "example@example.com"
 
-    # === ERRORS ===
+    PasswordRecoveryInputModel:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: "useremail@company.com"
+
+    NewPasswordInputModel:
+      type: object
+      required:
+        - newPassword
+        - recoveryCode
+      properties:
+        newPassword:
+          type: string
+          example: "string"
+        recoveryCode:
+          type: string
+          example: "string"
+
     ValidationErrorOutput:
       type: object
       required:
@@ -250,10 +295,8 @@ components:
       properties:
         message:
           type: string
-          example: "Invalid email format"
         field:
           type: string
-          example: "email"
 
     ValidationErrorListOutput:
       type: object

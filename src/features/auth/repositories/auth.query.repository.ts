@@ -5,6 +5,8 @@ import { ObjectId } from "mongodb";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
 import { MeOutput } from "../application/output/me.output";
 import { mapToMeOutput } from "../application/mappers/map-to-me-output.util";
+import { RecoveryPasswordOutput } from "../application/output/recovery-password.output";
+import { mapToRecoveryPasswordOutput } from "../application/mappers/map-to-recovery-password-output.util";
 
 export class AuthQueryRepository {
   async getUserByLoginOrEmail(
@@ -42,6 +44,21 @@ export class AuthQueryRepository {
     }
 
     return mapToLoginOutput(user);
+  }
+
+  async getUserByPasswordRecoveryCode(
+    recoveryCode: string,
+  ): Promise<RecoveryPasswordOutput | null> {
+    const user = await userCollection.findOne({
+      "passwordRecovery.recoveryCode": recoveryCode,
+      passwordRecovery: { $exists: true },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    return mapToRecoveryPasswordOutput(user);
   }
 
   async findByIdOrFail(id: string): Promise<MeOutput> {
