@@ -1,4 +1,4 @@
-import CreateBlogInputModel from "../../../src/features/blogs/domain/modeles/CreateModels";
+import CreateBlogInputModel from "../../../src/features/blogs/routes/request-payloads/create-blog-request.payload";
 import { randomUUID } from "node:crypto";
 
 export function createBlogDto(): CreateBlogInputModel {

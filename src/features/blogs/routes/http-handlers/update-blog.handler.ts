@@ -1,33 +1,25 @@
-import { Response } from "express";
-import UpdateBlogInputModel, {
-  UpdateBlogInputModelByID,
-} from "../../domain/modeles/UpdateModels";
+import { Request, Response } from "express";
 import blogsService from "../../application/blogs.service";
-import ViewBlogModel from "../../domain/modeles/ViewModels";
-import { RequestWithParamsAndBody } from "../../../../core/types/request";
-import { OutputErrorsType } from "../../../../core/errors/types/errors";
 import { HTTP_STATUSES } from "../../../../core/types/http-statuses";
 import { errorsHandler } from "../../../../core/errors/errors.handler";
+import UpdateBlogRequestPayload from "../request-payloads/update-blog-request.payload";
+import BlogOutput from "../../application/output/blog.output";
 
 export const updateBlogHandler = async (
-  req: RequestWithParamsAndBody<UpdateBlogInputModelByID, UpdateBlogInputModel>,
-  res: Response<ViewBlogModel | OutputErrorsType>,
+  req: Request<{ id: string }, {}, UpdateBlogRequestPayload>,
+  res: Response<BlogOutput>,
 ) => {
   try {
-    const blogIndex = await blogsService.findIndex(req.params.id);
-    if (blogIndex === -1) {
+    const id = req.params.id;
+    const blogIndex = await blogsService.findIndex(id);
+    if (!blogIndex) {
       res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
       return;
     }
 
-    const inputResult = await blogsService.update(blogIndex, req.body);
+    await blogsService.update({ id, ...req.body });
 
-    if (inputResult && "errors" in inputResult) {
-      res.status(HTTP_STATUSES.BAD_REQUEST_400).json(inputResult.errors);
-      return;
-    }
-
-    res.status(HTTP_STATUSES.NO_CONTENT_204).json(inputResult.blog);
+    res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
     return;
   } catch (e: unknown) {
     errorsHandler(e, res);

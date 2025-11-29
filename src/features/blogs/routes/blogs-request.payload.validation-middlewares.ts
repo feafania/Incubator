@@ -1,4 +1,5 @@
 import { body } from "express-validator";
+import { idValidation } from "../../../core/middlewares/validation/params-id.validation-middleware";
 
 const blogNameInputValidator = body("name")
   .isString()
@@ -34,13 +35,14 @@ const blogIsMembershipInputValidator = body("isMembership")
   .isBoolean()
   .withMessage("Membership is not boolean");
 
-export const blogInputValidators = [
+export const blogCreateRequestPayloadValidation = [
   blogNameInputValidator,
   blogDescriptionInputValidator,
   blogUrlInputValidator,
 ];
 
-export const blogUpdateValidators = [
+export const blogUpdateRequestPayloadValidation = [
+  idValidation,
   blogNameInputValidator,
   blogDescriptionInputValidator,
   blogUrlInputValidator,

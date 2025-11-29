@@ -6,7 +6,7 @@ import PostOutput from "../application/output/post.output";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
 import { mapToPostListPaginatedOutput } from "../application/mappers/map-to-post-pagination-output.util";
 import { SETTINGS } from "../../../core/settings/settings";
-import { mapPostSortDirection } from "../application/mappers/map-to-post-sort-direction.util";
+import { mapToMongoSortDirection } from "../../../core/helpers/map-to-mongo-sort-direction.util";
 import { Post } from "../domain/posts";
 import { mapToPostOutput } from "../application/mappers/map-to-post-output.util";
 
@@ -53,7 +53,7 @@ export class PostQueryRepository {
         },
       },
       { $project: { blog: 0 } },
-      { $sort: { [sortBy]: mapPostSortDirection(sortDirection) } },
+      { $sort: { [sortBy]: mapToMongoSortDirection(sortDirection) } },
       { $skip: skip },
       { $limit: pageSize },
     ];

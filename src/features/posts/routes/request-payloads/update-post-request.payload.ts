@@ -24,11 +24,4 @@ type UpdatePostRequestPayload = {
   blogId: string;
 };
 
-export type UpdatePostByIDRequestPayload = {
-  /**
-   * id of the updating post
-   */
-  id: string;
-};
-
 export default UpdatePostRequestPayload;

@@ -1,4 +1,4 @@
-type UpdateBlogInputModel = {
+type UpdateBlogRequestPayload = {
   /**
    * id of the updating blog
    */
@@ -25,10 +25,4 @@ type UpdateBlogInputModel = {
   // isMembership: boolean;
 };
 
-export type UpdateBlogInputModelByID = {
-  /**
-   * id of the updating blog
-   */
-  id: string;
-};
-export default UpdateBlogInputModel;
+export default UpdateBlogRequestPayload;

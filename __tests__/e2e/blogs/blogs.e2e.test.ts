@@ -2,13 +2,15 @@ import request from "supertest";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { SETTINGS } from "../../../src/core/settings/settings";
 import { blogCollection, client, runDB } from "../../../src/db/mongo.db";
-import { BlogDBType } from "../../../src/features/blogs/domain/blogs";
+import { Blog } from "../../../src/features/blogs/domain/blogs";
 import { HTTP_STATUSES } from "../../../src/core/types/http-statuses";
-import CreateBlogInputModel from "../../../src/features/blogs/domain/modeles/CreateModels";
-import blogsService from "../../../src/features/blogs/application/blogs.service";
+import CreateBlogInputModel from "../../../src/features/blogs/routes/request-payloads/create-blog-request.payload";
 import { datasetBlogValid, setMongoDB } from "../../utils/datasets";
 import { createApp } from "../../create-app";
 import CreatePostRequestPayload from "../../../src/features/posts/routes/request-payloads/create-post-request.payload";
+import { ObjectId, WithId } from "mongodb";
+import { mapToBlogOutput } from "../../../src/features/blogs/application/mappers/map-to-blog-output.util";
+import { BlogDomainDto } from "../../../src/features/blogs/domain/blog-domain.dto";
 
 const agent = request.agent(createApp()); // для захаваньня сэссый паміж запытамі, іначай  request(app)
 
@@ -28,7 +30,7 @@ describe("tests for /blogs", () => {
     // Падключэнне да часовага MongoDB
     await runDB(uri);
     // console.log(await blogCollection.find().toArray())
-    const info = await setMongoDB<BlogDBType>(blogCollection, []);
+    const info = await setMongoDB<Blog>(blogCollection, []);
   });
 
   afterAll(async () => {
@@ -57,7 +59,7 @@ describe("tests for /blogs", () => {
   });
 
   it("should get not empty blogs array", async () => {
-    const info = await setMongoDB<BlogDBType>(blogCollection, datasetBlogValid);
+    const info = await setMongoDB<Blog>(blogCollection, datasetBlogValid);
 
     const res = await agent
       .get(SETTINGS.PATH.BLOGS)
@@ -71,9 +73,13 @@ describe("tests for /blogs", () => {
     expect(Array.isArray(res.body.items)).toBe(true);
     expect(res.body.items.length).toBe(datasetBlogValid.length);
 
-    const sortedExpected = [...datasetBlogValid]
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .map((b) => blogsService.mapToOutput(b));
+    const sortedExpected = await Promise.all(
+      [...datasetBlogValid]
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .map((b) => {
+          return mapToBlogOutput(b as WithId<Blog>);
+        }),
+    );
 
     expect(res.body.items).toEqual(sortedExpected);
 
@@ -139,7 +145,7 @@ describe("tests for /blogs", () => {
   });
 
   it("shouldn't find blog", async () => {
-    await setMongoDB<BlogDBType>(blogCollection, datasetBlogValid);
+    await setMongoDB<Blog>(blogCollection, datasetBlogValid);
 
     const res = await agent
       .get(SETTINGS.PATH.BLOGS + "/1")
@@ -149,8 +155,8 @@ describe("tests for /blogs", () => {
   });
 
   it("should update blog", async () => {
-    const info = await setMongoDB<BlogDBType>(blogCollection, datasetBlogValid);
-    const updateBlog: BlogDBType = {
+    const info = await setMongoDB<Blog>(blogCollection, datasetBlogValid);
+    const updateBlog: Blog = {
       ...datasetBlogValid[0],
       name: "Stories",
       description: "Stories about my life",
@@ -159,40 +165,42 @@ describe("tests for /blogs", () => {
 
     const res = await agent
       .set("Authorization", "Basic " + codedAuthorization)
-      .put(SETTINGS.PATH.BLOGS + "/" + updateBlog.id)
+      .put(SETTINGS.PATH.BLOGS + "/" + updateBlog._id)
       .send(updateBlog) // отправка данных
       .expect(HTTP_STATUSES.NO_CONTENT_204);
   });
 
   it("shouldn't update blog", async () => {
-    const updateBlog: BlogDBType = {
-      id: -1,
+    const updateBlog: Blog = {
+      _id: new ObjectId(),
       name: "Stories",
       description: "Stories about my life",
       websiteUrl: "https://www.themoviedbdfdf.org/",
       createdAt: new Date("2024-11-10T14:30:00Z"),
       isMembership: false,
+      updatedAt: new Date("2024-11-10T14:30:00Z"),
+      update(dto: BlogDomainDto) {},
     };
 
     const res = await agent
       .set("Authorization", "Basic " + codedAuthorization)
-      .put(SETTINGS.PATH.BLOGS + "/" + updateBlog.id)
+      .put(SETTINGS.PATH.BLOGS + "/" + updateBlog._id)
       .send(updateBlog) // отправка данных
       .expect(HTTP_STATUSES.NOT_FOUND_404);
   });
 
   it("should not delete blog unauthorized", async () => {
-    const info = await setMongoDB<BlogDBType>(blogCollection, datasetBlogValid);
+    const info = await setMongoDB<Blog>(blogCollection, datasetBlogValid);
 
     await agent
       .set("Authorization", "")
-      .delete(SETTINGS.PATH.BLOGS + "/" + datasetBlogValid[1].id)
+      .delete(SETTINGS.PATH.BLOGS + "/" + datasetBlogValid[1]._id)
       .expect(HTTP_STATUSES.NOT_AUTHORIZED_401);
   });
 
   it("should delete existing blog", async () => {
-    await setMongoDB<BlogDBType>(blogCollection, datasetBlogValid);
-    const currentId = datasetBlogValid[1].id;
+    await setMongoDB<Blog>(blogCollection, datasetBlogValid);
+    const currentId = datasetBlogValid[1]._id;
 
     await agent
       .set("Authorization", "Basic " + codedAuthorization)
@@ -212,7 +220,7 @@ describe("tests for /blogs", () => {
   });
 
   it("should delete all blogs", async () => {
-    await setMongoDB<BlogDBType>(blogCollection, datasetBlogValid);
+    await setMongoDB<Blog>(blogCollection, datasetBlogValid);
     const res = await agent
       .delete(SETTINGS.PATH.BLOGS)
       .expect(HTTP_STATUSES.NO_CONTENT_204);
@@ -220,10 +228,10 @@ describe("tests for /blogs", () => {
   });
 
   it("should get empty posts array for existing blog", async () => {
-    await setMongoDB<BlogDBType>(blogCollection, [datasetBlogValid[0]]);
+    await setMongoDB<Blog>(blogCollection, [datasetBlogValid[0]]);
 
     const res = await agent
-      .get(`${SETTINGS.PATH.BLOGS}/${datasetBlogValid[0].id}/posts`)
+      .get(`${SETTINGS.PATH.BLOGS}/${datasetBlogValid[0]._id}/posts`)
       .expect(HTTP_STATUSES.OK_200);
 
     expect(res.body).toMatchObject({
@@ -238,7 +246,7 @@ describe("tests for /blogs", () => {
   });
 
   it("should create and get posts for specific blog", async () => {
-    await setMongoDB<BlogDBType>(blogCollection, [datasetBlogValid[0]]);
+    await setMongoDB<Blog>(blogCollection, [datasetBlogValid[0]]);
 
     const newPost: Omit<CreatePostRequestPayload, "blogId"> = {
       title: "My first rabbit story",
@@ -248,7 +256,7 @@ describe("tests for /blogs", () => {
 
     const createRes = await agent
       .set("Authorization", "Basic " + codedAuthorization)
-      .post(`${SETTINGS.PATH.BLOGS}/${datasetBlogValid[0].id}/posts`)
+      .post(`${SETTINGS.PATH.BLOGS}/${datasetBlogValid[0]._id}/posts`)
       .send(newPost)
       .expect(HTTP_STATUSES.CREATE_201);
 
@@ -261,7 +269,7 @@ describe("tests for /blogs", () => {
     });
 
     const getRes = await agent
-      .get(`${SETTINGS.PATH.BLOGS}/${datasetBlogValid[0].id}/posts`)
+      .get(`${SETTINGS.PATH.BLOGS}/${datasetBlogValid[0]._id}/posts`)
       .expect(HTTP_STATUSES.OK_200);
 
     expect(getRes.body).toHaveProperty("items");

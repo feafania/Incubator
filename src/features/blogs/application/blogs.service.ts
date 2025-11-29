@@ -1,99 +1,54 @@
-import ViewBlogModel from "../domain/modeles/ViewModels";
-import CreateBlogInputModel from "../domain/modeles/CreateModels";
-import UpdateBlogInputModel from "../domain/modeles/UpdateModels";
-import { BlogDBType, BlogReturnType, BlogsKeys } from "../domain/blogs";
-import blogsRepository from "../repositories/blogs.repository";
+import { Blog } from "../domain/blogs";
+import { ObjectId, WithId } from "mongodb";
+import { BlogsRepository } from "../repositories/blogs.repository";
 import {
-  FindQueryResponse,
-  QueryInput,
-} from "../../../core/types/input-response";
-import { createError } from "../../../core/errors/errors.handler";
-import { WithId } from "mongodb";
+  CreateBlogCommand,
+  UpdateBlogCommand,
+} from "./command-handlers/blog-commands";
 
-const blogsService = {
-  findByID: async function (
-    id: string | number | undefined,
-  ): Promise<WithId<BlogDBType> | null | undefined> {
-    return await blogsRepository.findByID(id);
-  },
-  async findIndex(id: string | number | undefined): Promise<number> {
-    return await blogsRepository.findIndex(id);
-  },
-  async findMany(
-    queryDTO: QueryInput<BlogsKeys>,
-  ): Promise<FindQueryResponse<ViewBlogModel>> {
-    const { items, totalCount } = await blogsRepository.findMany(queryDTO);
-    return {
-      items: items.map(this.mapToOutput),
-      totalCount,
-    };
-  },
-  async findByIDForOutput(
-    id: string | number | undefined,
-  ): Promise<ViewBlogModel | null> {
-    const foundBlog = await this.findByID(id);
-    if (!foundBlog) {
-      return null;
-    }
-    return this.mapToOutput(foundBlog);
-  },
+export class BlogsService {
+  private blogsRepository: BlogsRepository;
+
+  constructor() {
+    this.blogsRepository = new BlogsRepository();
+  }
+
+  async findByIdOrFail(id: string): Promise<WithId<Blog>> {
+    return await this.blogsRepository.findByIdOrFail(id);
+  }
+
+  async findIndex(id: string): Promise<ObjectId | null> {
+    return await this.blogsRepository.findIndex(id);
+  }
+
   async deleteMany(): Promise<void> {
-    await blogsRepository.deleteMany();
-  },
-  async deleteBlog(id: number): Promise<boolean> {
-    return blogsRepository.deleteBlog(id);
-  },
-  async create(input: CreateBlogInputModel): Promise<BlogReturnType> {
-    const newBlog: BlogDBType = {
-      ...input,
-      id: Date.now() + Math.random(),
-      name: input.name ? input.name.trim() : "",
-      description: input.description ? input.description.trim() : "",
-      websiteUrl: input.websiteUrl ? input.websiteUrl.trim() : "",
-      createdAt: new Date(),
-      isMembership: false,
-    };
-    try {
-      const createdBlog = await blogsRepository.create(newBlog);
-      return { blog: this.mapToOutput(createdBlog) };
-    } catch (err) {
-      return { errors: createError(err, "") };
-    }
-  },
-  async update(
-    index: number,
-    input: UpdateBlogInputModel,
-  ): Promise<BlogReturnType> {
-    try {
-      const blogToUpdate: BlogDBType = {
-        id: index,
-        name: input.name?.trim() || "",
-        description: input.description.trim() || "",
-        websiteUrl: input.websiteUrl.trim() || "",
-        createdAt: new Date(),
-        isMembership: false,
-      };
+    await this.blogsRepository.deleteMany();
+  }
 
-      const updatedBlog = await blogsRepository.update(blogToUpdate);
+  async delete(id: string): Promise<void> {
+    this.blogsRepository.delete(id);
+  }
 
-      return { blog: this.mapToOutput(updatedBlog) };
-    } catch (err) {
-      return { errors: createError(err, "") };
-    }
-  },
-  mapToOutput(model: BlogDBType): ViewBlogModel {
-    try {
-      return {
-        id: model.id.toString() ?? "", // або любыя значэнні па змаўчанні
-        name: model.name,
-        description: model.description,
-        websiteUrl: model.websiteUrl,
-        createdAt: model.createdAt.toISOString(),
-        isMembership: model.isMembership,
-      };
-    } catch {
-      throw new Error("Unexpected structure of records");
-    }
-  },
-};
+  async create(command: CreateBlogCommand): Promise<string> {
+    const newBlog = Blog.create(command);
+
+    const createdBlog = await this.blogsRepository.save(newBlog);
+    return createdBlog._id!.toString();
+  }
+
+  async update(command: UpdateBlogCommand): Promise<void> {
+    const { id, ...updateCommentDomainDto } = command;
+
+    const post = await this.blogsRepository.findByIdOrFail(id);
+
+    post.update(updateCommentDomainDto);
+
+    await this.blogsRepository.save(post);
+
+    return;
+  }
+}
+
+const blogsService = new BlogsService();
+
 export default blogsService;

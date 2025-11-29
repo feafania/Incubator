@@ -1,21 +1,15 @@
-import { Response } from "express";
-import blogsService from "../../application/blogs.service";
-import GetBlogModelById from "../../domain/modeles/ReadModels";
-import ViewBlogModel from "../../domain/modeles/ViewModels";
-import { RequestWithParams } from "../../../../core/types/request";
+import { Request, Response } from "express";
 import { HTTP_STATUSES } from "../../../../core/types/http-statuses";
 import { errorsHandler } from "../../../../core/errors/errors.handler";
+import BlogOutput from "../../application/output/blog.output";
+import { blogQueryService } from "../../application/blogs.query.service";
 
 export const findBlogHandler = async (
-  req: RequestWithParams<GetBlogModelById>,
-  res: Response<ViewBlogModel>,
+  req: Request<{ id: string }>,
+  res: Response<BlogOutput>,
 ): Promise<void> => {
   try {
-    const foundBlog = await blogsService.findByIDForOutput(req.params.id);
-    if (!foundBlog) {
-      res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-      return;
-    }
+    const foundBlog = await blogQueryService.findByIdOrFail(req.params.id);
     res.status(HTTP_STATUSES.OK_200).json(foundBlog);
   } catch (e: unknown) {
     errorsHandler(e, res);

@@ -1,130 +1,94 @@
-import { BlogDBType, BlogsKeys } from "../domain/blogs";
-import { blogCollection } from "../../../db/mongo.db";
-import {
-  FindQueryResponse,
-  QueryInput,
-} from "../../../core/types/input-response";
-import { mapBlogSortDirection } from "../application/mappers/map-to-blog-sort-direction.util";
 import { ObjectId, WithId } from "mongodb";
+import { Blog } from "../domain/blogs";
+import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
+import { blogCollection } from "../../../db/mongo.db";
 
-function blogsMongoRepository() {
-  return {
-    async findByID(
-      id: string | number | undefined,
-    ): Promise<WithId<BlogDBType> | null | undefined> {
-      if (id) {
-        const blog = await blogCollection.findOne({ id: +id });
-        if (blog) return blog;
-        if (ObjectId.isValid(id.toString())) {
-          const objectID = new ObjectId(id.toString());
-          if (objectID) {
-            return await blogCollection.findOne({ _id: objectID });
-          }
-        }
+export class BlogsRepository {
+  async findByIdOrFail(id: string): Promise<WithId<Blog>> {
+    let objectId: ObjectId;
+
+    try {
+      objectId = new ObjectId(id);
+    } catch {
+      throw new RepositoryNotFoundError("Blog not exist");
+    }
+    const res = await blogCollection.findOne({ _id: objectId });
+
+    if (!res) {
+      throw new RepositoryNotFoundError("Blog not exist");
+    }
+
+    return Blog.reconstitute(res);
+  }
+
+  async findIndex(id: string): Promise<ObjectId | null> {
+    let objectId: ObjectId;
+
+    try {
+      objectId = new ObjectId(id);
+    } catch {
+      throw new RepositoryNotFoundError("Blog not exist");
+    }
+    if (objectId) {
+      const res = await blogCollection.findOne({ _id: objectId });
+      if (res) {
+        return res._id;
       }
+    }
+    return null;
+  }
 
-      return null;
-    },
-    async findIndex(id: string | number | undefined): Promise<number> {
-      if (id) {
-        //выключаем усе палі, акрамя id
-        const foundBlog = await blogCollection.findOne(
-          { id: +id },
-          { projection: { id: 1, _id: 0 } },
-        );
-        if (foundBlog) {
-          return foundBlog.id;
-        }
-      }
-      return -1;
-    },
-    async findMany(
-      queryDto: QueryInput<BlogsKeys>,
-    ): Promise<FindQueryResponse<BlogDBType>> {
-      const { pageNumber, pageSize, sortBy, sortDirection, searchNameTerm } =
-        queryDto;
+  async deleteMany(): Promise<void> {
+    await blogCollection.deleteMany({});
+  }
 
-      const skip = (pageNumber - 1) * pageSize;
+  async delete(id: string): Promise<void> {
+    let objectId: ObjectId;
 
-      const filter = searchNameTerm
-        ? { name: { $regex: searchNameTerm, $options: "i" } }
-        : {};
-      // 'i' робіць неадчувальным для рэгістру
-      const items = (await blogCollection
-        .find(filter)
-        // "asc" (по возрастанию), то используется 1
-        // "desc" — то -1 для сортировки по убыванию. - по алфавиту от Я-А, Z-A
-        .sort({ [sortBy]: mapBlogSortDirection(sortDirection) })
+    try {
+      objectId = new ObjectId(id);
+    } catch {
+      throw new RepositoryNotFoundError("Blog not exist");
+    }
 
-        // пропускаем определённое количество док. перед тем, как вернуть нужный набор данных.
-        .skip(skip)
+    const deleteResult = await blogCollection.deleteOne({
+      _id: objectId,
+    });
 
-        // ограничивает количество возвращаемых документов до значения pageSize
-        .limit(pageSize)
-        .toArray()) as BlogDBType[];
-      const totalCount = await blogCollection.countDocuments(filter);
-      return {
-        items,
-        totalCount,
-      };
-    },
-    async deleteMany(): Promise<void> {
-      await blogCollection.deleteMany({});
-    },
-    async deleteBlog(id: number): Promise<boolean> {
-      if (id) {
-        blogCollection.deleteOne({ id: id });
-        return true;
-      }
-      return false;
-    },
-    async create(input: BlogDBType): Promise<BlogDBType> {
-      const result = await blogCollection.insertOne(input);
+    if (deleteResult.deletedCount < 1) {
+      console.log("No blog for delete");
+      throw new RepositoryNotFoundError("Blog not exist");
+    }
 
-      if (!result.insertedId) {
-        throw new Error("Failed to insert blog");
-      }
+    return;
+  }
 
-      const createdBlog = await blogCollection.findOne({
-        _id: result.insertedId,
-      });
-      if (!createdBlog) {
-        throw new Error("Failed to retrieve created blog");
-      }
+  async save(blog: Blog): Promise<Blog> {
+    if (!blog._id) {
+      const insertResult = await blogCollection.insertOne(blog);
 
-      const { _id, ...cleanedBlog } = createdBlog;
-      return cleanedBlog;
-    },
-    async update(input: BlogDBType): Promise<BlogDBType> {
-      const foundBlog = await blogCollection.findOne({ id: input.id });
+      blog._id = insertResult.insertedId;
 
-      if (!foundBlog) {
-        throw new Error("Failed to find blog");
-      }
+      return blog;
+    } else {
+      const { _id, ...dtoToUpdate } = blog;
 
-      // Обновляем пост, используя деструктуризацию для сохранения старых значений
-      const updatedFields = {
-        name: input.name.trim(),
-        description: input.description.trim(),
-        websiteUrl: input.websiteUrl.trim(),
-        // isMembership: input.isMembership,
-      };
-      await blogCollection.updateOne(
-        { _id: foundBlog._id },
-        { $set: updatedFields },
+      const updateResult = await blogCollection.updateOne(
+        {
+          _id,
+        },
+        {
+          $set: {
+            ...dtoToUpdate,
+          },
+        },
       );
 
-      const updatedBlog = await blogCollection.findOne({ _id: foundBlog._id });
-      if (!updatedBlog) {
-        throw new Error("Failed to retrieve updated blog");
+      if (updateResult.matchedCount < 1) {
+        throw new RepositoryNotFoundError("Blog not exist");
       }
 
-      const { _id, ...cleanedBlog } = updatedBlog;
-      return cleanedBlog;
-    },
-  };
+      return blog;
+    }
+  }
 }
-
-const blogsRepository = blogsMongoRepository();
-
-export default blogsRepository;

@@ -1,4 +1,4 @@
-type ViewBlogModel = {
+type BlogOutput = {
   /**
    * id of the blog
    */
@@ -23,11 +23,11 @@ type ViewBlogModel = {
    * Date of creation
    * pattern: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/
    */
-  createdAt?: string;
+  createdAt: string;
   /**
    * True if user has not expired membership subscription to blog
    */
-  isMembership?: boolean;
+  isMembership: boolean;
 };
 
-export default ViewBlogModel;
+export default BlogOutput;

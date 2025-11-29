@@ -1,28 +1,18 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import blogsService from "../../application/blogs.service";
-
-import GetBlogModelById from "../../domain/modeles/ReadModels";
 import postsService from "../../../posts/application/posts.service";
-import { RequestWithParamsAndBody } from "../../../../core/types/request";
 import { HTTP_STATUSES } from "../../../../core/types/http-statuses";
 import CreatePostRequestPayload from "../../../posts/routes/request-payloads/create-post-request.payload";
 import PostOutput from "../../../posts/application/output/post.output";
 import { errorsHandler } from "../../../../core/errors/errors.handler";
 import { postQueryService } from "../../../posts/application/posts.query.service";
 
-export const createBlogPostHandler = async (
-  req: RequestWithParamsAndBody<
-    GetBlogModelById,
-    Omit<CreatePostRequestPayload, "blogId">
-  >,
+export const createBlogPostListHandler = async (
+  req: Request<{ id: string }, {}, Omit<CreatePostRequestPayload, "blogId">>,
   res: Response<PostOutput>,
 ): Promise<void> => {
   try {
-    const foundBlog = await blogsService.findByID(req.params.id);
-    if (!foundBlog) {
-      res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-      return;
-    }
+    const foundBlog = await blogsService.findByIdOrFail(req.params.id);
 
     const inputWithBlog = {
       ...req.body,

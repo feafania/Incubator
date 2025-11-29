@@ -1,23 +1,19 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import blogsService from "../../application/blogs.service";
-import CreateBlogInputModel from "../../domain/modeles/CreateModels";
-import ViewBlogModel from "../../domain/modeles/ViewModels";
-import { RequestWithBody } from "../../../../core/types/request";
-import { OutputErrorsType } from "../../../../core/errors/types/errors";
 import { HTTP_STATUSES } from "../../../../core/types/http-statuses";
 import { errorsHandler } from "../../../../core/errors/errors.handler";
+import CreateBlogRequestPayload from "../request-payloads/create-blog-request.payload";
+import { blogQueryService } from "../../application/blogs.query.service";
 
 export const createBlogHandler = async (
-  req: RequestWithBody<CreateBlogInputModel>,
-  res: Response<ViewBlogModel | OutputErrorsType>,
+  req: Request<{}, {}, CreateBlogRequestPayload>,
+  res: Response,
 ) => {
   try {
-    const inputResult = await blogsService.create(req.body);
-    if ("errors" in inputResult) {
-      res.status(HTTP_STATUSES.BAD_REQUEST_400).json(inputResult.errors);
-      return;
-    }
-    res.status(HTTP_STATUSES.CREATE_201).json(inputResult.blog);
+    const createdPostId = await blogsService.create(req.body);
+    const post = await blogQueryService.findByIdOrFail(createdPostId);
+
+    res.status(HTTP_STATUSES.CREATE_201).send(post);
   } catch (e: unknown) {
     errorsHandler(e, res);
   }

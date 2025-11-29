@@ -29,7 +29,7 @@ const postBlogIdInputValidator = body("blogId")
   .isLength({ min: 1 })
   .withMessage("The blogId should be from 1 to 1000 symbols")
   .custom(async (blogId, { req }) => {
-    const blog = await blogsService.findByID(blogId);
+    const blog = await blogsService.findIndex(blogId);
     if (!blog) {
       throw new Error("There is no blog ID");
     }

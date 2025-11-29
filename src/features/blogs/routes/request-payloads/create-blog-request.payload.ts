@@ -1,4 +1,4 @@
-type CreateBlogInputModel = {
+type CreateBlogRequestPayload = {
   /**
    * name of the creating blog
    * maxLength: 15
@@ -17,4 +17,4 @@ type CreateBlogInputModel = {
   websiteUrl: string;
 };
 
-export default CreateBlogInputModel;
+export default CreateBlogRequestPayload;

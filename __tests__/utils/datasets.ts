@@ -5,113 +5,118 @@ import {
   OptionalUnlessRequiredId,
   WithId,
 } from "mongodb";
-import { BlogDBType } from "../../src/features/blogs/domain/blogs";
+import { Blog } from "../../src/features/blogs/domain/blogs";
 import { Post } from "../../src/features/posts/domain/posts";
 import { PostDomainDto } from "../../src/features/posts/domain/post-domain.dto";
+import { BlogDomainDto } from "../../src/features/blogs/domain/blog-domain.dto";
 
-export const blog1: WithId<BlogDBType> = {
+export const blog1: WithId<Blog> = {
   _id: new ObjectId(),
-  id: Date.now() + Math.random(),
   name: "t" + Date.now() + Math.random(),
   description: "a" + Date.now() + Math.random(),
   websiteUrl: "https://t" + Date.now() + Math.random(),
   createdAt: new Date("2020-11-10T14:30:00Z"),
   isMembership: false,
+  updatedAt: new Date("2023-10-10T14:30:00Z"),
+  update(dto: BlogDomainDto) {},
 };
 
-export const blog2: WithId<BlogDBType> = {
+export const blog2: WithId<Blog> = {
   _id: new ObjectId(),
-  id: Date.now() + Math.random(),
   name: "p" + Date.now() + Math.random(),
   description: "n" + Date.now() + Math.random(),
   websiteUrl: "https://t" + Date.now() + Math.random(),
   createdAt: new Date("2021-11-10T14:30:00Z"),
   isMembership: false,
+  updatedAt: new Date("2023-10-10T14:30:00Z"),
+  update(dto: BlogDomainDto) {},
 };
 
-export const blog3: WithId<BlogDBType> = {
+export const blog3: WithId<Blog> = {
   _id: new ObjectId(),
-  id: Date.now() + Math.random(),
   name: "j" + Date.now() + Math.random(),
   description: "a" + Date.now() + Math.random(),
   websiteUrl: "https://t" + Date.now() + Math.random(),
   createdAt: new Date("2019-11-10T14:30:00Z"),
   isMembership: false,
+  updatedAt: new Date("2023-10-10T14:30:00Z"),
+  update(dto: BlogDomainDto) {},
 };
 
-export const blog4: WithId<BlogDBType> = {
+export const blog4: WithId<Blog> = {
   _id: new ObjectId(),
-  id: Date.now() + Math.random(),
   name: "t" + Date.now() + Math.random(),
   description: "a" + Date.now() + Math.random(),
   websiteUrl: "https://t" + Date.now() + Math.random(),
   createdAt: new Date("2018-11-10T14:30:00Z"),
   isMembership: false,
+  updatedAt: new Date("2023-10-10T14:30:00Z"),
+  update(dto: BlogDomainDto) {},
 };
 
-export const blog5: WithId<BlogDBType> = {
+export const blog5: WithId<Blog> = {
   _id: new ObjectId(),
-  id: Date.now() + Math.random(),
   name: "",
   description: "a" + Date.now() + Math.random(),
   websiteUrl: "https://t" + Date.now() + Math.random(),
   createdAt: new Date("2005-11-10T14:30:00Z"),
   isMembership: false,
+  updatedAt: new Date("2023-10-10T14:30:00Z"),
+  update(dto: BlogDomainDto) {},
 };
 
-export const blog6: WithId<BlogDBType> = {
+export const blog6: WithId<Blog> = {
   _id: new ObjectId(),
-  id: Date.now() + Math.random(),
   name: "thjhhhhhhhgff ffghhg ghf",
   description: "a" + Date.now() + Math.random(),
   websiteUrl: "https://t" + Date.now() + Math.random(),
   createdAt: new Date("2014-11-10T14:30:00Z"),
   isMembership: false,
+  updatedAt: new Date("2023-10-10T14:30:00Z"),
+  update(dto: BlogDomainDto) {},
 };
 
-export const blog7: WithId<BlogDBType> = {
+export const blog7: WithId<Blog> = {
   _id: new ObjectId(),
-  id: Date.now() + Math.random(),
   name: "t" + Date.now() + Math.random(),
   description: "",
   websiteUrl: "https://t" + Date.now() + Math.random(),
   createdAt: new Date("2021-05-10T14:30:00Z"),
   isMembership: false,
+  updatedAt: new Date("2023-10-10T14:30:00Z"),
+  update(dto: BlogDomainDto) {},
 };
 
-export const blog8: WithId<BlogDBType> = {
+export const blog8: WithId<Blog> = {
   _id: new ObjectId(),
-  id: Date.now() + Math.random(),
   name: "t" + Date.now() + Math.random(),
   description: "a" + Date.now() + Math.random(),
   websiteUrl: "",
   createdAt: new Date("2021-06-10T14:30:00Z"),
   isMembership: false,
+  updatedAt: new Date("2023-10-10T14:30:00Z"),
+  update(dto: BlogDomainDto) {},
 };
 
-export const blog9: WithId<BlogDBType> = {
+export const blog9: WithId<Blog> = {
   _id: new ObjectId(),
-  id: Date.now() + Math.random(),
   name: "t" + Date.now() + Math.random(),
   description: "a" + Date.now() + Math.random(),
   websiteUrl: "fgdggdf" + Date.now() + Math.random(),
   createdAt: new Date("2021-10-10T14:30:00Z"),
   isMembership: false,
+  updatedAt: new Date("2023-10-10T14:30:00Z"),
+  update(dto: BlogDomainDto) {},
 };
 
-export const datasetBlogValid: WithId<BlogDBType>[] = [
-  blog1,
-  blog2,
-  blog3,
-  blog4,
-];
-export const datasetBlogNotValid1: WithId<BlogDBType>[] = [
+export const datasetBlogValid: WithId<Blog>[] = [blog1, blog2, blog3, blog4];
+export const datasetBlogNotValid1: WithId<Blog>[] = [
   blog5,
   blog6,
   blog7,
   blog8,
 ];
-export const datasetBlogNotValid2: WithId<BlogDBType>[] = [
+export const datasetBlogNotValid2: WithId<Blog>[] = [
   blog1,
   blog2,
   blog6,
@@ -235,34 +240,6 @@ export const datasetPostNotValid2: OptionalUnlessRequiredId<Post>[] = [
   post6,
   post9,
 ];
-
-// export async function setMongoDB(
-//   collection: Collection<BlogDBType> | Collection<PostDBType>,
-//   dataset: OptionalUnlessRequiredId<BlogDBType | PostDBType>[],
-// ): Promise<InsertManyResult<BlogDBType | PostDBType> | null> {
-//   //     collection.insertMany(dataset):
-//   //      returns object:
-//   //      	acknowledged — подтверждение успешной операции.
-//   // 	        insertedCount — количество вставленных документов.
-//   // 	        insertedIds — объект с ключами индексов вставленных элементов и их _id.
-//
-//   try {
-//     if ((await collection.countDocuments()) > 0) {
-//       await collection.drop();
-//     }
-//     if (dataset.length > 0) {
-//       // @ts-ignore
-//       return collection.insertMany(dataset);
-//     }
-//     return null;
-//   } catch (error) {
-//     console.error(
-//       "An error occurred while initializing the collection:",
-//       error,
-//     );
-//     return null;
-//   }
-// }
 
 export async function setMongoDB<T extends object>(
   collection: Collection<T>,

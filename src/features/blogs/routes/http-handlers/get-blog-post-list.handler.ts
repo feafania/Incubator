@@ -1,24 +1,17 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import blogsService from "../../application/blogs.service";
-import GetBlogModelById from "../../domain/modeles/ReadModels";
-import { RequestWithParamsAndQuery } from "../../../../core/types/request";
-
-import { HTTP_STATUSES } from "../../../../core/types/http-statuses";
 import { PostListRequestPayload } from "../../../posts/routes/request-payloads/post-list-request.payload";
 import { errorsHandler } from "../../../../core/errors/errors.handler";
 import { setDefaultSortAndPaginationIfNotExist } from "../../../../core/helpers/set-default-sort-and-pagination";
 import { postQueryService } from "../../../posts/application/posts.query.service";
 
-export const findBlogPostsHandler = async (
-  req: RequestWithParamsAndQuery<GetBlogModelById, PostListRequestPayload>,
+export const getBlogPostListHandler = async (
+  req: Request<{ id: string }, {}, {}, PostListRequestPayload>,
   res: Response,
 ): Promise<void> => {
   try {
-    const foundBlog = await blogsService.findByID(req.params.id);
-    if (!foundBlog) {
-      res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-      return;
-    }
+    const foundBlog = await blogsService.findByIdOrFail(req.params.id);
+
     const queryInput = setDefaultSortAndPaginationIfNotExist(
       req.query,
     ) as PostListRequestPayload;

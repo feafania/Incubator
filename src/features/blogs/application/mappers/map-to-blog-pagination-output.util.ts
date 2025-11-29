@@ -1,14 +1,26 @@
-import { PaginatedOutputWithItems } from "../../../../core/types/paginated.output";
+import { WithId } from "mongodb";
+import { Blog } from "../../domain/blogs";
+import { BlogListPaginatedOutput } from "../output/blog-list-paginated.output";
+import BlogOutput from "../output/blog.output";
 
-export function mapToBlogPaginatedOutput<T>(
-  items: T[],
+export function mapToBlogListPaginatedOutput(
+  blogs: WithId<Blog>[],
   meta: { pageNumber: number; pageSize: number; totalCount: number },
-): PaginatedOutputWithItems<T> {
+): BlogListPaginatedOutput {
   return {
-    pagesCount: Math.ceil(meta.totalCount / meta.pageSize),
     page: meta.pageNumber,
     pageSize: meta.pageSize,
+    pagesCount: Math.ceil(meta.totalCount / meta.pageSize),
     totalCount: meta.totalCount,
-    items: items,
+    items: blogs.map(
+      (blog): BlogOutput => ({
+        id: blog._id.toString(),
+        name: blog.name,
+        description: blog.description,
+        websiteUrl: blog.websiteUrl,
+        createdAt: blog.createdAt.toISOString(),
+        isMembership: blog.isMembership,
+      }),
+    ),
   };
 }

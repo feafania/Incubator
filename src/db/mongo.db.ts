@@ -1,5 +1,5 @@
 import { Collection, Db, MongoClient } from "mongodb";
-import { BlogDBType } from "../features/blogs/domain/blogs";
+import { Blog } from "../features/blogs/domain/blogs";
 import { Post } from "../features/posts/domain/posts";
 import { SETTINGS } from "../core/settings/settings";
 import { User } from "../features/users/domain/user";
@@ -10,7 +10,7 @@ import { SessionEntity } from "../features/auth/domain/session";
 
 export let client: MongoClient;
 
-export let blogCollection: Collection<BlogDBType>;
+export let blogCollection: Collection<Blog>;
 export let postCollection: Collection<Post>;
 export let userCollection: Collection<User>;
 export let commentCollection: Collection<CommentEntity>;
@@ -30,7 +30,7 @@ export async function runDB(url: string): Promise<void> {
     const db: Db = client.db(SETTINGS.DB_NAME);
 
     // Ініцыялізуем калекцыі
-    blogCollection = db.collection<BlogDBType>(SETTINGS.COLLECTIONS.BLOGS);
+    blogCollection = db.collection<Blog>(SETTINGS.COLLECTIONS.BLOGS);
     postCollection = db.collection<Post>(SETTINGS.COLLECTIONS.POSTS);
     userCollection = db.collection<User>(SETTINGS.COLLECTIONS.USERS);
     commentCollection = db.collection<CommentEntity>(
