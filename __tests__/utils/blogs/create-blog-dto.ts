@@ -1,8 +1,8 @@
-import { v4 as uuidv4 } from "uuid";
 import CreateBlogInputModel from "../../../src/features/blogs/domain/modeles/CreateModels";
+import { randomUUID } from "node:crypto";
 
 export function createBlogDto(): CreateBlogInputModel {
-  const unique = uuidv4().slice(0, 6);
+  const unique = randomUUID().slice(0, 6);
 
   return {
     name: `Blog-${unique}`,

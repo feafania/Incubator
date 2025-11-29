@@ -12,7 +12,7 @@ export async function createPostCommentHandler(
   res: Response,
 ) {
   try {
-    const foundPost = await postsService.findByID(req.params.id);
+    const foundPost = await postsService.findByIdOrFail(req.params.id);
     if (!foundPost) {
       res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
       return;

@@ -1,24 +1,23 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 
 import postsService from "../../application/posts.service";
-import GetPostModelById from "../../domain/modeles/ReadModels";
-import { RequestWithParams } from "../../../../core/types/request";
 import { HTTP_STATUSES } from "../../../../core/types/http-statuses";
+import { errorsHandler } from "../../../../core/errors/errors.handler";
 
 export const deletePostHandler = async (
-  req: RequestWithParams<GetPostModelById>,
+  req: Request<{ id: string }>,
   res: Response,
 ): Promise<void> => {
   try {
     const postIndex = await postsService.findIndex(req.params.id);
-    if (postIndex === -1) {
+    if (!postIndex) {
       res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
       return;
     }
-    await postsService.deletePost(postIndex);
+    await postsService.delete(req.params.id);
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
     return;
-  } catch {
-    res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
+  } catch (e: unknown) {
+    errorsHandler(e, res);
   }
 };

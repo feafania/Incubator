@@ -1,4 +1,4 @@
-type CreatePostInputModel = {
+type CreatePostRequestPayload = {
   /**
    * title of the creating post
    * maxLength: 30
@@ -17,7 +17,7 @@ type CreatePostInputModel = {
   /**
    * id of the connected blog
    */
-  blogId?: string;
+  blogId: string;
 };
 
-export default CreatePostInputModel;
+export default CreatePostRequestPayload;

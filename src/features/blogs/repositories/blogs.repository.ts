@@ -5,18 +5,24 @@ import {
   QueryInput,
 } from "../../../core/types/input-response";
 import { mapBlogSortDirection } from "../application/mappers/map-to-blog-sort-direction.util";
+import { ObjectId, WithId } from "mongodb";
 
 function blogsMongoRepository() {
   return {
     async findByID(
       id: string | number | undefined,
-    ): Promise<BlogDBType | null | undefined> {
+    ): Promise<WithId<BlogDBType> | null | undefined> {
       if (id) {
-        return (await blogCollection.findOne(
-          { id: +id },
-          { projection: { _id: 0 } },
-        )) as BlogDBType;
+        const blog = await blogCollection.findOne({ id: +id });
+        if (blog) return blog;
+        if (ObjectId.isValid(id.toString())) {
+          const objectID = new ObjectId(id.toString());
+          if (objectID) {
+            return await blogCollection.findOne({ _id: objectID });
+          }
+        }
       }
+
       return null;
     },
     async findIndex(id: string | number | undefined): Promise<number> {

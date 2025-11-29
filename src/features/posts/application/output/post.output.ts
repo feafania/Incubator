@@ -1,4 +1,4 @@
-type ViewPostModel = {
+type PostOutput = {
   /**
    * id of the post
    */
@@ -34,4 +34,4 @@ type ViewPostModel = {
   createdAt: string;
 };
 
-export default ViewPostModel;
+export default PostOutput;

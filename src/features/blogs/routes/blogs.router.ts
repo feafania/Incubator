@@ -9,12 +9,12 @@ import { deleteAllBlogsHandler } from "./http-handlers/delete-all-blogs.handler"
 import { createBlogPostHandler } from "./http-handlers/create-blog-post.handler";
 import { findBlogPostsHandler } from "./http-handlers/find-blog-posts.handler";
 import { BlogSortedFields } from "../domain/blogs";
-import { PostSortedFields } from "../../posts/domain/posts";
-import { postInputValidatorsWithoutBlogID } from "../../posts/routes/posts.middlewares";
+import { postRequestPayloadValidationWithoutBlogID } from "../../posts/routes/posts-request.payload.validation-middlewares";
 import { paginationAndSortingValidation } from "../../../core/middlewares/validation/query-pagination-sorting.validation-middleware";
 import { inputCheckErrorsMiddleware } from "../../../core/middlewares/validation/error.middleware";
 import { adminGuardMiddleware } from "../../../auth/middlewares/admin-guard.middleware";
 import { POSTS_PATH } from "../../../core/paths/paths";
+import { PostSortField } from "../../posts/routes/request-payloads/post-sort-field";
 
 export const blogsRouter = Router();
 
@@ -44,7 +44,7 @@ blogsRouter.delete("/", adminGuardMiddleware, deleteAllBlogsHandler);
 
 blogsRouter.get(
   `/:id${POSTS_PATH}`,
-  paginationAndSortingValidation(PostSortedFields),
+  paginationAndSortingValidation(Object.values(PostSortField)),
   inputCheckErrorsMiddleware,
   findBlogPostsHandler as any as RequestHandler,
 );
@@ -52,7 +52,7 @@ blogsRouter.get(
 blogsRouter.post(
   `/:id${POSTS_PATH}`,
   adminGuardMiddleware,
-  postInputValidatorsWithoutBlogID,
+  postRequestPayloadValidationWithoutBlogID,
   inputCheckErrorsMiddleware,
   createBlogPostHandler,
 );

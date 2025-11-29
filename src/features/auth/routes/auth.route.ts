@@ -14,7 +14,8 @@ import { accessTokenGuardMiddleware } from "../../../auth/middlewares/access-tok
 import {
   LOGIN_PATH,
   LOGOUT_PATH,
-  ME_PATH, PASSWORD_PATH,
+  ME_PATH,
+  PASSWORD_PATH,
   REFRESH_TOKEN_PATH,
   REGISTRATION_PATH,
 } from "../../../core/paths/paths";

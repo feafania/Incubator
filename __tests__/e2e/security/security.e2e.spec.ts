@@ -13,7 +13,7 @@ import { loginWithUserAgent } from "../../utils/auth/login-with-user-agent";
 import { findCookie } from "../../utils/auth/extract-cookie";
 import { DeviceListOutput } from "../../../src/features/security/application/output/device-list.output";
 import { sleep } from "../../sleep";
-import {createUser} from "../../utils/users/create-user";
+import { createUser } from "../../utils/users/create-user";
 
 describe("Security Devices API", () => {
   let app: express.Express;

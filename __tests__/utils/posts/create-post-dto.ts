@@ -1,8 +1,10 @@
-import { v4 as uuidv4 } from "uuid";
-import CreatePostInputModel from "../../../src/features/posts/domain/modeles/CreateModels";
+import CreatePostInputModel from "../../../src/features/posts/routes/request-payloads/create-post-request.payload";
+import { randomUUID } from "node:crypto";
+import { ObjectId } from "mongodb";
 
-export function createPostDto(blogId?: string): CreatePostInputModel {
-  const unique = uuidv4().slice(0, 6);
+export function createPostDto(id?: string): CreatePostInputModel {
+  const unique = randomUUID().slice(0, 6);
+  const blogId = id ?? new ObjectId(id).toString();
 
   return {
     title: `Post-${unique}`,

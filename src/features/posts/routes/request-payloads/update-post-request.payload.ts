@@ -1,4 +1,4 @@
-type UpdatePostInputModel = {
+type UpdatePostRequestPayload = {
   /**
    * id of the updating post
    */
@@ -24,11 +24,11 @@ type UpdatePostInputModel = {
   blogId: string;
 };
 
-export type UpdatePostInputModelByID = {
+export type UpdatePostByIDRequestPayload = {
   /**
    * id of the updating post
    */
   id: string;
 };
 
-export default UpdatePostInputModel;
+export default UpdatePostRequestPayload;

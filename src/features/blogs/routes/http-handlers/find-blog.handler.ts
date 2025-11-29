@@ -4,6 +4,7 @@ import GetBlogModelById from "../../domain/modeles/ReadModels";
 import ViewBlogModel from "../../domain/modeles/ViewModels";
 import { RequestWithParams } from "../../../../core/types/request";
 import { HTTP_STATUSES } from "../../../../core/types/http-statuses";
+import { errorsHandler } from "../../../../core/errors/errors.handler";
 
 export const findBlogHandler = async (
   req: RequestWithParams<GetBlogModelById>,
@@ -16,7 +17,7 @@ export const findBlogHandler = async (
       return;
     }
     res.status(HTTP_STATUSES.OK_200).json(foundBlog);
-  } catch {
-    res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
+  } catch (e: unknown) {
+    errorsHandler(e, res);
   }
 };

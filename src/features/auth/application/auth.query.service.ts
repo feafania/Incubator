@@ -1,7 +1,7 @@
 import { AuthQueryRepository } from "../repositories/auth.query.repository";
 import { LoginOutput } from "./output/login.output";
 import { MeOutput } from "./output/me.output";
-import {RecoveryPasswordOutput} from "./output/recovery-password.output";
+import { RecoveryPasswordOutput } from "./output/recovery-password.output";
 
 class AuthQueryService {
   private authQueryRepository: AuthQueryRepository;

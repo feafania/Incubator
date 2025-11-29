@@ -1,22 +1,17 @@
-import { Response } from "express";
-import postsService from "../../application/posts.service";
-import GetPostModelById from "../../domain/modeles/ReadModels";
-import ViewPostModel from "../../domain/modeles/ViewModels";
-import { RequestWithParams } from "../../../../core/types/request";
+import { Request, Response } from "express";
 import { HTTP_STATUSES } from "../../../../core/types/http-statuses";
+import { postQueryService } from "../../application/posts.query.service";
+import PostOutput from "../../application/output/post.output";
+import { errorsHandler } from "../../../../core/errors/errors.handler";
 
 export const findPostHandler = async (
-  req: RequestWithParams<GetPostModelById>,
-  res: Response<ViewPostModel>,
+  req: Request<{ id: string }>,
+  res: Response<PostOutput>,
 ): Promise<void> => {
   try {
-    const foundPost = await postsService.findByIDForOutput(req.params.id);
-    if (!foundPost) {
-      res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-      return;
-    }
+    const foundPost = await postQueryService.findByIdOrFail(req.params.id);
     res.status(HTTP_STATUSES.OK_200).json(foundPost);
-  } catch (error) {
-    res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
+  } catch (e: unknown) {
+    errorsHandler(e, res);
   }
 };

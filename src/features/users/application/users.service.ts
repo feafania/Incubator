@@ -11,8 +11,8 @@ import { UserDomainDto } from "../domain/user-domain.dto";
 import { User } from "../domain/user";
 import { randomUUID } from "node:crypto";
 import { SETTINGS } from "../../../core/settings/settings";
-import {WithId} from "mongodb";
-import {userCollection} from "../../../db/mongo.db";
+import { WithId } from "mongodb";
+import { userCollection } from "../../../db/mongo.db";
 
 export class UsersService {
   private usersRepository: UsersRepository;

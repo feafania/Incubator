@@ -7,6 +7,7 @@ import ViewBlogModel from "../../domain/modeles/ViewModels";
 import { RequestWithParamsAndBody } from "../../../../core/types/request";
 import { OutputErrorsType } from "../../../../core/errors/types/errors";
 import { HTTP_STATUSES } from "../../../../core/types/http-statuses";
+import { errorsHandler } from "../../../../core/errors/errors.handler";
 
 export const updateBlogHandler = async (
   req: RequestWithParamsAndBody<UpdateBlogInputModelByID, UpdateBlogInputModel>,
@@ -28,7 +29,7 @@ export const updateBlogHandler = async (
 
     res.status(HTTP_STATUSES.NO_CONTENT_204).json(inputResult.blog);
     return;
-  } catch (error) {
-    res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
+  } catch (e: unknown) {
+    errorsHandler(e, res);
   }
 };

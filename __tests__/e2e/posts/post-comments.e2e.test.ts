@@ -24,7 +24,7 @@ describe("tests for /posts/:id/comments", () => {
     app = setup.app;
     mongoServer = setup.mongoServer;
     await setMongoDB(postCollection, datasetPostValid);
-    validPostId = datasetPostValid[0].id.toString();
+    validPostId = datasetPostValid[0]._id!.toString();
     // console.log(await postCollection.find().toArray())
 
     // ствараем карыстальніка і атрымліваем JWT токен

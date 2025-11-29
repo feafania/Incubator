@@ -36,15 +36,18 @@ const postBlogIdInputValidator = body("blogId")
     return true;
   });
 
-export const postInputValidatorsWithoutBlogID = [
+export const postRequestPayloadValidationWithoutBlogID = [
   postTitleInputValidator,
   postShortDescriptionInputValidator,
   postContentInputValidator,
 ];
 
-export const postInputValidators = [
-  ...postInputValidatorsWithoutBlogID,
+export const postRequestPayloadValidation = [
+  ...postRequestPayloadValidationWithoutBlogID,
   postBlogIdInputValidator,
 ];
 
-export const postCommentValidators = [idValidation, commentContentValidation];
+export const postCommentRequestPayloadValidation = [
+  idValidation,
+  commentContentValidation,
+];

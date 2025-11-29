@@ -1,29 +1,51 @@
-import { OutputErrorsType } from "../../../core/errors/types/errors";
-import ViewPostModel from "./modeles/ViewModels";
+import { ObjectId, WithId } from "mongodb";
+import { ClassFieldsOnly } from "../../../core/types/fields-only";
+import { PostDomainDto } from "./post-domain.dto";
 
-export const PostSortedFields = [
-  "id",
-  "title",
-  "shortDescription",
-  "content",
-  "createdAt",
-  "blogName",
-  "blogId",
-];
-
-export type PostDBType = {
-  id: number;
+export class Post {
+  _id?: ObjectId;
   title: string;
   shortDescription: string;
   content: string;
-  blogId: number;
-  blogName?: string;
+  blogId: string;
   createdAt: Date;
-};
+  updatedAt: Date;
 
-export type PostsKeys = keyof PostDBType;
+  private constructor(dto: ClassFieldsOnly<Post>) {
+    this.title = dto.title;
+    this.shortDescription = dto.shortDescription;
+    this.content = dto.content;
+    this.blogId = dto.blogId;
+    this.createdAt = dto.createdAt;
+    this.updatedAt = dto.updatedAt;
 
-export interface PostReturnType {
-  errors?: OutputErrorsType;
-  post?: ViewPostModel;
+    if (dto._id) {
+      this._id = dto._id;
+    }
+  }
+
+  static create(dto: PostDomainDto) {
+    return new Post({
+      title: dto.title,
+      shortDescription: dto.shortDescription,
+      content: dto.content,
+      blogId: dto.blogId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+
+  update(dto: PostDomainDto) {
+    this.title = dto.title;
+    this.shortDescription = dto.shortDescription;
+    this.content = dto.content;
+    this.blogId = dto.blogId;
+    this.updatedAt = new Date();
+  }
+
+  static reconstitute(dto: ClassFieldsOnly<Post>): WithId<Post> {
+    const instance = new Post(dto);
+
+    return instance as WithId<Post>;
+  }
 }

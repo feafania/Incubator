@@ -8,6 +8,7 @@ import { PaginatedOutputWithItems } from "../../../../core/types/paginated.outpu
 import { buildValidatedQuery } from "../../../../core/middlewares/validation/build-validated-query";
 import { HTTP_STATUSES } from "../../../../core/types/http-statuses";
 import { mapToBlogPaginatedOutput } from "../../application/mappers/map-to-blog-pagination-output.util";
+import { errorsHandler } from "../../../../core/errors/errors.handler";
 
 export const getBlogsHandler = async (
   req: RequestWithQuery<QueryInput<BlogsKeys>>,
@@ -25,7 +26,7 @@ export const getBlogsHandler = async (
       totalCount,
     });
     res.status(HTTP_STATUSES.OK_200).json(blogsListOutput);
-  } catch {
-    res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
+  } catch (e: unknown) {
+    errorsHandler(e, res);
   }
 };

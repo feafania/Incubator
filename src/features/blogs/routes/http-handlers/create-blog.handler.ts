@@ -5,6 +5,7 @@ import ViewBlogModel from "../../domain/modeles/ViewModels";
 import { RequestWithBody } from "../../../../core/types/request";
 import { OutputErrorsType } from "../../../../core/errors/types/errors";
 import { HTTP_STATUSES } from "../../../../core/types/http-statuses";
+import { errorsHandler } from "../../../../core/errors/errors.handler";
 
 export const createBlogHandler = async (
   req: RequestWithBody<CreateBlogInputModel>,
@@ -17,7 +18,7 @@ export const createBlogHandler = async (
       return;
     }
     res.status(HTTP_STATUSES.CREATE_201).json(inputResult.blog);
-  } catch (error) {
-    res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
+  } catch (e: unknown) {
+    errorsHandler(e, res);
   }
 };

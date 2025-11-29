@@ -1,162 +1,94 @@
-import { PostDBType, PostsKeys } from "../domain/posts";
+import { Post } from "../domain/posts";
 import { postCollection } from "../../../db/mongo.db";
-import {
-  FindQueryResponse,
-  QueryInput,
-} from "../../../core/types/input-response";
-import { SETTINGS } from "../../../core/settings/settings";
-import { mapPostSortDirection } from "../application/mappers/map-to-post-sort-direction.util";
+import { ObjectId, WithId } from "mongodb";
+import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
 
-const postsRepository = {
-  async findByID(
-    id: string | number | undefined,
-  ): Promise<PostDBType | null | undefined> {
-    if (id) {
-      return (await postCollection.findOne(
-        { id: +id },
-        { projection: { _id: 0 } },
-      )) as PostDBType;
+export class PostsRepository {
+  async findByIdOrFail(id: string): Promise<WithId<Post>> {
+    let objectId: ObjectId;
+
+    try {
+      objectId = new ObjectId(id);
+    } catch {
+      throw new RepositoryNotFoundError("Post not exist");
     }
-    return null;
-  },
+    const res = await postCollection.findOne({ _id: objectId });
 
-  async findIndex(id: string | number | undefined): Promise<number> {
-    if (id) {
-      //выключаем усе палі, акрамя id
-      const foundPost = await postCollection.findOne(
-        { id: +id },
-        { projection: { id: 1, _id: 0 } },
-      );
-      if (foundPost) {
-        return foundPost.id;
+    if (!res) {
+      throw new RepositoryNotFoundError("Post not exist");
+    }
+
+    return Post.reconstitute(res);
+  }
+
+  async findIndex(id: string): Promise<ObjectId | null> {
+    let objectId: ObjectId;
+
+    try {
+      objectId = new ObjectId(id);
+    } catch {
+      throw new RepositoryNotFoundError("Post not exist");
+    }
+    if (objectId) {
+      const res = await postCollection.findOne({ _id: objectId });
+      if (res) {
+        return res._id;
       }
     }
-    return -1;
-  },
-
-  async findMany(
-    queryDto: QueryInput<PostsKeys>,
-    blogId?: string | number,
-  ): Promise<FindQueryResponse<PostDBType>> {
-    const { pageNumber, pageSize, sortBy, sortDirection, searchNameTerm } =
-      queryDto;
-
-    const skip = (pageNumber - 1) * pageSize;
-
-    const matchFilter: Record<string, any> = {};
-
-    if (searchNameTerm) {
-      // 'i' робіць неадчувальным для рэгістру
-      matchFilter.title = { $regex: searchNameTerm, $options: "i" };
-    }
-    if (blogId) {
-      matchFilter.blogId = Number(blogId);
-    }
-
-    // const items = (await postCollection
-    //   .find(filter)
-    //   // "asc" (по возрастанию), то используется 1
-    //   // "desc" — то -1 для сортировки по убыванию. - по алфавиту от Я-А, Z-A
-    //   .sort({ [sortBy]: mapSortDirection(sortDirection) })
-    //
-    //   // пропускаем определённое количество док. перед тем, как вернуть нужный набор данных.
-    //   .skip(skip)
-    //
-    //   // ограничивает количество возвращаемых документов до значения pageSize
-    //   .limit(pageSize)
-    //   .toArray()) as PostDBType[];
-    // const totalCount = await postCollection.countDocuments(filter);
-
-    const pipeline: any[] = [
-      { $match: matchFilter },
-      {
-        $lookup: {
-          from: SETTINGS.COLLECTIONS.BLOGS,
-          localField: "blogId",
-          foreignField: "id",
-          as: "blog",
-        },
-      },
-      { $unwind: { path: "$blog", preserveNullAndEmptyArrays: true } },
-      {
-        $addFields: {
-          blogName: "$blog.name",
-        },
-      },
-      { $project: { blog: 0, _id: 0 } },
-      { $sort: { [sortBy]: mapPostSortDirection(sortDirection) } },
-      { $skip: skip },
-      { $limit: pageSize },
-    ];
-
-    const items = (await postCollection
-      .aggregate(pipeline)
-      .toArray()) as PostDBType[];
-    const totalCount = await postCollection.countDocuments(matchFilter);
-
-    return {
-      items,
-      totalCount,
-    };
-  },
+    return null;
+  }
 
   async deleteMany(): Promise<void> {
     await postCollection.deleteMany({});
-  },
+  }
 
-  async deletePost(id: number): Promise<boolean> {
-    if (id) {
-      postCollection.deleteOne({ id: id });
-      return true;
-    }
-    return false;
-  },
+  async delete(id: string): Promise<void> {
+    let objectId: ObjectId;
 
-  async create(input: PostDBType): Promise<PostDBType> {
-    const result = await postCollection.insertOne(input);
-
-    if (!result.insertedId) {
-      throw new Error("Failed to insert post");
+    try {
+      objectId = new ObjectId(id);
+    } catch {
+      throw new RepositoryNotFoundError("Post not exist");
     }
 
-    const createdPost = await postCollection.findOne({
-      _id: result.insertedId,
+    const deleteResult = await postCollection.deleteOne({
+      _id: objectId,
     });
-    if (!createdPost) {
-      throw new Error("Failed to retrieve created post");
+
+    if (deleteResult.deletedCount < 1) {
+      console.log("No post for delete");
+      throw new RepositoryNotFoundError("Post not exist");
     }
 
-    const { _id, ...cleanedPost } = createdPost;
-    return cleanedPost;
-  },
+    return;
+  }
 
-  async update(input: PostDBType): Promise<PostDBType> {
-    const foundPost = await postCollection.findOne({ id: input.id });
+  async save(post: Post): Promise<Post> {
+    if (!post._id) {
+      const insertResult = await postCollection.insertOne(post);
 
-    if (!foundPost) {
-      throw new Error("Failed to find post");
+      post._id = insertResult.insertedId;
+
+      return post;
+    } else {
+      const { _id, ...dtoToUpdate } = post;
+
+      const updateResult = await postCollection.updateOne(
+        {
+          _id,
+        },
+        {
+          $set: {
+            ...dtoToUpdate,
+          },
+        },
+      );
+
+      if (updateResult.matchedCount < 1) {
+        throw new RepositoryNotFoundError("Post not exist");
+      }
+
+      return post;
     }
-
-    const updatedFields = {
-      title: input.title.trim(),
-      shortDescription: input.shortDescription.trim(),
-      content: input.content.trim(),
-      blogId: input.blogId,
-    };
-
-    await postCollection.updateOne(
-      { _id: foundPost._id },
-      { $set: updatedFields },
-    );
-
-    const updatedPost = await postCollection.findOne({ _id: foundPost._id });
-    if (!updatedPost) {
-      throw new Error("Failed to retrieve updated post");
-    }
-
-    const { _id, ...cleanedPost } = updatedPost;
-    return cleanedPost;
-  },
-};
-
-export default postsRepository;
+  }
+}

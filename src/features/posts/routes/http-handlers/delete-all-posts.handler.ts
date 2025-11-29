@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import postsService from "../../application/posts.service";
 import { HTTP_STATUSES } from "../../../../core/types/http-statuses";
+import { errorsHandler } from "../../../../core/errors/errors.handler";
 
 export const deleteAllPostsHandler = async (
   req: Request,
@@ -9,8 +10,7 @@ export const deleteAllPostsHandler = async (
   try {
     await postsService.deleteMany();
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
-    return;
-  } catch {
-    res.sendStatus(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
+  } catch (e: unknown) {
+    errorsHandler(e, res);
   }
 };

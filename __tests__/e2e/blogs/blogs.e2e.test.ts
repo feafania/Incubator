@@ -6,9 +6,9 @@ import { BlogDBType } from "../../../src/features/blogs/domain/blogs";
 import { HTTP_STATUSES } from "../../../src/core/types/http-statuses";
 import CreateBlogInputModel from "../../../src/features/blogs/domain/modeles/CreateModels";
 import blogsService from "../../../src/features/blogs/application/blogs.service";
-import CreatePostInputModel from "../../../src/features/posts/domain/modeles/CreateModels";
 import { datasetBlogValid, setMongoDB } from "../../utils/datasets";
 import { createApp } from "../../create-app";
+import CreatePostRequestPayload from "../../../src/features/posts/routes/request-payloads/create-post-request.payload";
 
 const agent = request.agent(createApp()); // для захаваньня сэссый паміж запытамі, іначай  request(app)
 
@@ -240,7 +240,7 @@ describe("tests for /blogs", () => {
   it("should create and get posts for specific blog", async () => {
     await setMongoDB<BlogDBType>(blogCollection, [datasetBlogValid[0]]);
 
-    const newPost: CreatePostInputModel = {
+    const newPost: Omit<CreatePostRequestPayload, "blogId"> = {
       title: "My first rabbit story",
       shortDescription: "How Rabbit Anty found a carrot",
       content: "It was early morning...",
@@ -256,7 +256,7 @@ describe("tests for /blogs", () => {
       title: newPost.title,
       shortDescription: newPost.shortDescription,
       content: newPost.content,
-      blogId: datasetBlogValid[0].id.toString(),
+      blogId: datasetBlogValid[0]._id.toString(),
       blogName: datasetBlogValid[0].name,
     });
 
@@ -268,7 +268,7 @@ describe("tests for /blogs", () => {
     expect(getRes.body.items.length).toBe(1);
     expect(getRes.body.items[0]).toMatchObject({
       title: newPost.title,
-      blogId: datasetBlogValid[0].id.toString(),
+      blogId: datasetBlogValid[0]._id.toString(),
     });
 
     expect(getRes.body).toMatchObject({

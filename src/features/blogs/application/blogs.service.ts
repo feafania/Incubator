@@ -8,11 +8,12 @@ import {
   QueryInput,
 } from "../../../core/types/input-response";
 import { createError } from "../../../core/errors/errors.handler";
+import { WithId } from "mongodb";
 
 const blogsService = {
   findByID: async function (
     id: string | number | undefined,
-  ): Promise<BlogDBType | null | undefined> {
+  ): Promise<WithId<BlogDBType> | null | undefined> {
     return await blogsRepository.findByID(id);
   },
   async findIndex(id: string | number | undefined): Promise<number> {

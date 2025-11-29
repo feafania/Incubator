@@ -15,11 +15,13 @@ import {
   post7,
   setMongoDB,
 } from "../../utils/datasets";
-import postsService from "../../../src/features/posts/application/posts.service";
-import CreatePostInputModel from "../../../src/features/posts/domain/modeles/CreateModels";
+import CreatePostInputModel from "../../../src/features/posts/routes/request-payloads/create-post-request.payload";
 import { HTTP_STATUSES } from "../../../src/core/types/http-statuses";
-import { PostDBType } from "../../../src/features/posts/domain/posts";
+import { Post } from "../../../src/features/posts/domain/posts";
 import { createApp } from "../../create-app";
+import { mapToPostOutput } from "../../../src/features/posts/application/mappers/map-to-post-output.util";
+import { ObjectId, WithId } from "mongodb";
+import { PostDomainDto } from "../../../src/features/posts/domain/post-domain.dto";
 
 const agent = request.agent(createApp()); // для захаваньня сэссый паміж запытамі, іначай  request(app)
 let mongoServer: MongoMemoryServer; // Общий сервер для всех тестов
@@ -73,12 +75,6 @@ describe("tests for /posts", () => {
       .get(SETTINGS.PATH.POSTS)
       .expect(HTTP_STATUSES.OK_200);
 
-    // console.log(JSON.stringify(res.body[0]),'\n',JSON.stringify(datasetBlogValid[0]))
-    // expect(res.body.length).toBe(1)
-    // expect(res.body.length).toBe(datasetPostValid.length);
-    // expect(res.body[0]).toEqual(
-    //   await postsService.mapToOutput(datasetPostValid[0]),
-    // );
     expect(res.body).toHaveProperty("items");
     expect(Array.isArray(res.body.items)).toBe(true);
     expect(res.body.items.length).toBe(datasetPostValid.length);
@@ -86,7 +82,9 @@ describe("tests for /posts", () => {
     const sortedExpected = await Promise.all(
       [...datasetPostValid]
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-        .map((b) => postsService.mapToOutput(b)),
+        .map((b) => {
+          return mapToPostOutput(b as WithId<Post> & { blogName: string });
+        }),
     );
     expect(res.body.items).toEqual(sortedExpected);
 
@@ -101,7 +99,7 @@ describe("tests for /posts", () => {
     title: "Animals",
     shortDescription: "All you want to know...",
     content: "About everything",
-    blogId: blog1.id.toString(),
+    blogId: blog1._id.toString(),
   };
 
   it("shouldn't create posts without authorization", async () => {
@@ -130,7 +128,7 @@ describe("tests for /posts", () => {
       title: "",
       shortDescription: "All you want to know...",
       content: "About everything",
-      blogId: blog1.id.toString(),
+      blogId: blog1._id.toString(),
     };
     const res = await agent
       .set("Authorization", "Basic " + codedAuthorization)
@@ -146,7 +144,7 @@ describe("tests for /posts", () => {
       title: post7.title,
       shortDescription: post7.shortDescription,
       content: post7.content,
-      blogId: post7.blogId.toString(),
+      blogId: post7.blogId,
     };
     const res = await agent
       .set("Authorization", "Basic " + codedAuthorization)
@@ -171,7 +169,7 @@ describe("tests for /posts", () => {
     await setMongoDB(blogCollection, datasetBlogValid);
     await setMongoDB(postCollection, datasetPostValid);
 
-    const updatePost: PostDBType = {
+    const updatePost: Post = {
       ...datasetPostValid[0],
       title: "Stories",
       shortDescription: "Stories about my life",
@@ -179,25 +177,27 @@ describe("tests for /posts", () => {
     };
     const res = await agent
       .set("Authorization", "Basic " + codedAuthorization)
-      .put(SETTINGS.PATH.POSTS + "/" + updatePost.id)
+      .put(SETTINGS.PATH.POSTS + "/" + updatePost._id)
       .send(updatePost) // отправка данных
       .expect(HTTP_STATUSES.NO_CONTENT_204);
   });
 
   it("shouldn't update post", async () => {
     await setMongoDB(blogCollection, datasetBlogValid);
-    const updatePost: PostDBType = {
-      id: -1,
+    const updatePost: Post = {
+      _id: new ObjectId(),
       title: "Stories",
       shortDescription: "Stories about my life",
       content: "about stories",
-      blogId: blog1.id,
+      blogId: blog1._id.toString(),
       createdAt: new Date("2024-11-10T14:30:00Z"),
+      updatedAt: new Date("2024-11-10T14:30:00Z"),
+      update(dto: PostDomainDto) {},
     };
 
     const res = await agent
       .set("Authorization", "Basic " + codedAuthorization)
-      .put(SETTINGS.PATH.POSTS + "/" + updatePost.id)
+      .put(SETTINGS.PATH.POSTS + "/" + updatePost._id)
       .send(updatePost) // отправка данных
       .expect(HTTP_STATUSES.NOT_FOUND_404);
   });
@@ -205,18 +205,20 @@ describe("tests for /posts", () => {
   it("shouldn't update post with wrong title", async () => {
     await setMongoDB(blogCollection, datasetBlogValid);
     await setMongoDB(postCollection, datasetPostValid);
-    const updatePost: PostDBType = {
-      id: post1.id,
+    const updatePost: Post = {
+      _id: post1._id,
       title: "Stories dfsdfsk dsfsfs sdfsfsf fdsfsd dsfsfs",
       shortDescription: "Stories about my life",
       content: "about stories",
-      blogId: blog1.id,
+      blogId: blog1._id.toString(),
       createdAt: new Date("2024-11-10T14:30:00Z"),
+      updatedAt: new Date("2024-11-10T14:30:00Z"),
+      update(dto: PostDomainDto) {},
     };
 
     const res = await agent
       .set("Authorization", "Basic " + codedAuthorization)
-      .put(SETTINGS.PATH.POSTS + "/" + updatePost.id)
+      .put(SETTINGS.PATH.POSTS + "/" + updatePost._id)
       .send(updatePost) // отправка данных
       .expect(HTTP_STATUSES.BAD_REQUEST_400);
   });
@@ -226,13 +228,13 @@ describe("tests for /posts", () => {
 
     await agent
       .set("Authorization", "")
-      .delete(SETTINGS.PATH.POSTS + "/" + datasetPostValid[1].id)
+      .delete(SETTINGS.PATH.POSTS + "/" + datasetPostValid[1]._id)
       .expect(HTTP_STATUSES.NOT_AUTHORIZED_401);
   });
 
   it("should delete existing post", async () => {
     await setMongoDB(postCollection, datasetPostValid);
-    const currentId = datasetPostValid[1].id;
+    const currentId = datasetPostValid[1]._id;
     await agent
       .set("Authorization", "Basic " + codedAuthorization)
       .delete(SETTINGS.PATH.POSTS + "/" + currentId)
