@@ -2,7 +2,9 @@ import { Post } from "../domain/posts";
 import { postCollection } from "../../../db/mongo.db";
 import { ObjectId, WithId } from "mongodb";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
+import { injectable } from "inversify";
 
+@injectable()
 export class PostsRepository {
   async findByIdOrFail(id: string): Promise<WithId<Post>> {
     let objectId: ObjectId;

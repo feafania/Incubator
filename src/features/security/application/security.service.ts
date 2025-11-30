@@ -1,11 +1,13 @@
 import { ForbiddenError } from "../../../core/errors/forbidden.error";
 import { SessionRepository } from "../../auth/repositories/session.repository";
+import { inject, injectable } from "inversify";
 
+@injectable()
 export class SecurityService {
-  private sessionRepository: SessionRepository;
-  constructor(sessionRepository?: SessionRepository) {
-    this.sessionRepository = sessionRepository ?? new SessionRepository();
-  }
+  constructor(
+    @inject(SessionRepository)
+    private sessionRepository: SessionRepository,
+  ) {}
 
   async delete(deviceId: string, userId: string): Promise<void> {
     const session = await this.sessionRepository.findByDeviceId(deviceId);
@@ -20,7 +22,3 @@ export class SecurityService {
     await this.sessionRepository.deleteAllByUserId(userId, [deviceId]);
   }
 }
-
-const securityService = new SecurityService();
-
-export default securityService;

@@ -24,26 +24,16 @@ import { truncateDateToSeconds } from "../../../core/helpers/truncate-date-to-se
 import { addHours, addMinutes } from "date-fns";
 import { UpdatePasswordCommand } from "./command-handlers/update-password-commands";
 import { passwordHasher } from "../../../core/infrastructure/crypto/password-hasher";
+import { inject } from "inversify";
 
 export class AuthService {
-  private usersService: UsersService;
-  private usersRepository: UsersRepository;
-  private authRepository: AuthRepository;
-  private sessionRepository: SessionRepository;
-  private sessionService: SessionService;
   constructor(
-    usersService?: UsersService,
-    usersRepository?: UsersRepository,
-    authRepository?: AuthRepository,
-    sessionRepository?: SessionRepository,
-    sessionService?: SessionService,
-  ) {
-    this.usersService = usersService ?? new UsersService();
-    this.usersRepository = usersRepository ?? new UsersRepository();
-    this.authRepository = authRepository ?? new AuthRepository();
-    this.sessionRepository = sessionRepository ?? new SessionRepository();
-    this.sessionService = sessionService ?? new SessionService();
-  }
+    @inject(UsersService) private usersService: UsersService,
+    @inject(UsersRepository) private usersRepository: UsersRepository,
+    @inject(AuthRepository) private authRepository: AuthRepository,
+    @inject(SessionRepository) private sessionRepository: SessionRepository,
+    @inject(SessionService) private sessionService: SessionService,
+  ) {}
 
   generateToken(payload: JwtPayload, tokenType: TokenType = TokenType.ACCESS) {
     return jwtService.createToken(payload, this.getTokenConfig(tokenType));
@@ -324,7 +314,3 @@ export class AuthService {
     return configOptions;
   }
 }
-
-const authService = new AuthService();
-
-export default authService;

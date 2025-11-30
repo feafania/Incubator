@@ -8,7 +8,9 @@ import { mapToMongoSortDirection } from "../../../core/helpers/map-to-mongo-sort
 import { mapToBlogListPaginatedOutput } from "../application/mappers/map-to-blog-pagination-output.util";
 import BlogOutput from "../application/output/blog.output";
 import { mapToBlogOutput } from "../application/mappers/map-to-blog-output.util";
+import { injectable } from "inversify";
 
+@injectable()
 export class BlogQueryRepository {
   async findMany(
     queryDto: BlogListRequestPayload,

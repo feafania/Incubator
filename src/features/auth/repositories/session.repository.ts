@@ -2,7 +2,9 @@ import { ObjectId, WithId } from "mongodb";
 import { sessionCollection } from "../../../db/mongo.db";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
 import { SessionEntity } from "../domain/session";
+import { injectable } from "inversify";
 
+@injectable()
 export class SessionRepository {
   async findByIdOrFail(id: string): Promise<WithId<SessionEntity>> {
     let objectId: ObjectId;

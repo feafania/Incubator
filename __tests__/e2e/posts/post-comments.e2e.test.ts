@@ -17,7 +17,7 @@ describe("tests for /posts/:id/comments", () => {
 
   let app: express.Express;
   let mongoServer: MongoMemoryServer;
-  const adminToken = generateBasicAuthToken();
+  generateBasicAuthToken();
 
   beforeAll(async () => {
     const setup = await createTestApp();

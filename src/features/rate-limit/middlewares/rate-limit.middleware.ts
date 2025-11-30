@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import rateLimitService from "../application/rate-limit.service";
 import { TooManyRequestsError } from "../../../core/errors/too-many-requests.error";
+import { container } from "../../../composition-root";
+import { RateLimitService } from "../application/rate-limit.service";
 
 export async function rateLimitMiddleware(
   req: Request,
@@ -10,6 +11,7 @@ export async function rateLimitMiddleware(
   const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
   const url = req.originalUrl ?? req.baseUrl;
 
+  const rateLimitService = container.get<RateLimitService>(RateLimitService);
   const isLimited = await rateLimitService.isLimited(ip, url);
 
   if (isLimited) {

@@ -5,13 +5,14 @@ import {
   CreatePostCommand,
   UpdatePostCommand,
 } from "./command-handlers/post-commands";
+import { inject, injectable } from "inversify";
 
+@injectable()
 export class PostsService {
-  private postsRepository: PostsRepository;
-
-  constructor() {
-    this.postsRepository = new PostsRepository();
-  }
+  constructor(
+    @inject(PostsRepository)
+    private postsRepository: PostsRepository,
+  ) {}
 
   async findByIdOrFail(id: string): Promise<WithId<Post>> {
     return await this.postsRepository.findByIdOrFail(id);
@@ -48,7 +49,3 @@ export class PostsService {
     return;
   }
 }
-
-const postsService = new PostsService();
-
-export default postsService;

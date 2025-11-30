@@ -3,25 +3,27 @@ import { DEVICES_PATH } from "../../../core/paths/paths";
 import { inputValidationResultMiddleware } from "../../../core/middlewares/validation/input-validtion-result.middleware";
 import { idValidation } from "../../../core/middlewares/validation/params-id.validation-middleware";
 import { refreshTokenGuardMiddleware } from "../../../auth/middlewares/refresh-token-guard.middleware";
-import { getDeviceListHandler } from "./http-handlers/get-device-list.handler";
-import { deleteAllDevicesHandler } from "./http-handlers/delete-all-devices.handler";
-import { deleteDeviceHandler } from "./http-handlers/delete-device.handler";
+import { container } from "../../../composition-root";
+import { SecurityController } from "./controllers/security.controller";
 
 export const securityRouter = Router({});
+
+const securityController =
+  container.get<SecurityController>(SecurityController);
 
 securityRouter
   .get(
     `${DEVICES_PATH}`,
     refreshTokenGuardMiddleware,
     inputValidationResultMiddleware,
-    getDeviceListHandler,
+    securityController.getDeviceListHandler.bind(securityController),
   )
 
   .delete(
     `${DEVICES_PATH}`,
     refreshTokenGuardMiddleware,
     inputValidationResultMiddleware,
-    deleteAllDevicesHandler,
+    securityController.deleteAllDevicesHandler.bind(securityController),
   )
 
   .delete(
@@ -29,5 +31,5 @@ securityRouter
     refreshTokenGuardMiddleware,
     idValidation,
     inputValidationResultMiddleware,
-    deleteDeviceHandler,
+    securityController.deleteDeviceHandler.bind(securityController),
   );

@@ -6,7 +6,8 @@ import { randomUUID } from "node:crypto";
 import { AUTH_PATH, LOGIN_PATH } from "../../../src/core/paths/paths";
 import { createUser } from "../users/create-user";
 import { findCookie } from "./extract-cookie";
-import usersService from "../../../src/features/users/application/users.service";
+import { container } from "../../../src/composition-root";
+import { UsersService } from "../../../src/features/users/application/users.service";
 
 /**
  * Helper: login with custom user-agent and return tokens + cookies
@@ -25,6 +26,7 @@ export async function loginWithUserAgent(
   const dto = { ...createUserDto(), ...userDto };
 
   // 2️⃣ Ствараем карыстальніка
+  const usersService = container.get<UsersService>(UsersService);
   const user = await usersService.findByLogin(dto.login);
   if (!user) {
     await createUser(app, dto);

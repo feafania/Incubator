@@ -5,11 +5,12 @@ import { UserSortField } from "./request-payloads/user-sort-field";
 import { inputValidationResultMiddleware } from "../../../core/middlewares/validation/input-validtion-result.middleware";
 import { createUserRequestPayloadValidation } from "./user-request.payload.validation-middlewares";
 import { idValidation } from "../../../core/middlewares/validation/params-id.validation-middleware";
-import { createUserHandler } from "./http-handlers/create-user.handler";
-import { deleteUserHandler } from "./http-handlers/delete-user.handler";
-import { getUserListHandler } from "./http-handlers/get-user-list.handler";
+import { container } from "../../../composition-root";
+import { UsersController } from "./controllers/users.controller";
 
 export const usersRouter = Router({});
+
+const usersController = container.get<UsersController>(UsersController);
 
 //middleware на весь маршрут
 usersRouter.use(adminGuardMiddleware);
@@ -19,19 +20,19 @@ usersRouter
     "",
     paginationAndSortingValidation(Object.values(UserSortField)),
     inputValidationResultMiddleware,
-    getUserListHandler,
+    usersController.getUserListHandler.bind(usersController),
   )
 
   .post(
     "",
     createUserRequestPayloadValidation,
     inputValidationResultMiddleware,
-    createUserHandler,
+    usersController.createUserHandler.bind(usersController),
   )
 
   .delete(
     "/:id",
     idValidation,
     inputValidationResultMiddleware,
-    deleteUserHandler,
+    usersController.deleteUserHandler.bind(usersController),
   );

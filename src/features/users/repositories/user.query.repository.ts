@@ -6,7 +6,9 @@ import { mapToUserOutput } from "../application/mappers/map-to-user-output.util"
 import { mapToUserListPaginatedOutput } from "../application/mappers/map-to-user-list-paginated-output.util";
 import { userCollection } from "../../../db/mongo.db";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
+import { injectable } from "inversify";
 
+@injectable()
 export class UserQueryRepository {
   async findMany(
     queryDto: UserListRequestPayload,

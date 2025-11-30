@@ -6,12 +6,13 @@ import {
   UpdateCommentCommand,
 } from "./command-handlers/comment-commands";
 import { ForbiddenError } from "../../../core/errors/forbidden.error";
+import { inject, injectable } from "inversify";
 
+@injectable()
 export class CommentsService {
-  private commentsRepository: CommentsRepository;
-  constructor() {
-    this.commentsRepository = new CommentsRepository();
-  }
+  constructor(
+    @inject(CommentsRepository) private commentsRepository: CommentsRepository,
+  ) {}
 
   async create(command: CreateCommentCommand): Promise<string> {
     const { content, postId, commentatorInfo } = command;
@@ -57,7 +58,3 @@ export class CommentsService {
     await this.commentsRepository.deleteMany();
   }
 }
-
-const commentsService = new CommentsService();
-
-export default commentsService;

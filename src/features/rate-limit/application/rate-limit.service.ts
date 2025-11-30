@@ -3,14 +3,16 @@ import { RateLimitRepository } from "../repositories/rate-limit.repository";
 import { RegisterRequestCommand } from "./command-handlers/register-request-commands";
 import { RateLimit } from "../domain/rate-limit";
 import { RateLimitDomainDto } from "../domain/rate-limit-domain.dto.ts";
+import { inject, injectable } from "inversify";
 
+@injectable()
 export class RateLimitService {
-  private rateLimitRepository: RateLimitRepository;
   private RATE_LIMIT_TIME = 10; //sec
   private RATE_LIMIT_COUNT = 5;
-  constructor(rateLimitRepository?: RateLimitRepository) {
-    this.rateLimitRepository = rateLimitRepository ?? new RateLimitRepository();
-  }
+  constructor(
+    @inject(RateLimitRepository)
+    private rateLimitRepository: RateLimitRepository,
+  ) {}
 
   async register(command: RegisterRequestCommand): Promise<void> {
     const newRequestCommand: RateLimitDomainDto = {
@@ -42,7 +44,3 @@ export class RateLimitService {
     await this.rateLimitRepository.deleteMany();
   }
 }
-
-const rateLimitService = new RateLimitService();
-
-export default rateLimitService;

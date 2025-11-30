@@ -2,7 +2,9 @@ import { revokedTokenCollection } from "../../../db/mongo.db";
 import { RevokedToken } from "../domain/revoked-token";
 import { RevokedTokenDomainDto } from "../domain/revoked-token-domain.dto";
 import { tokenHasher } from "../../../core/infrastructure/crypto/token-hasher";
+import { injectable } from "inversify";
 
+@injectable()
 export class AuthRepository {
   async addRevokedToken(revokedToken: RevokedTokenDomainDto) {
     const entity = RevokedToken.create({

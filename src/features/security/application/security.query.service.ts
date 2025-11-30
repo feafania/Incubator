@@ -1,12 +1,13 @@
 import { SecurityQueryRepository } from "../repositories/security.query.repository";
 import { DeviceListOutput } from "./output/device-list.output";
+import { inject, injectable } from "inversify";
 
-class SecurityQueryService {
-  private securityQueryRepository: SecurityQueryRepository;
-  constructor(securityQueryRepository?: SecurityQueryRepository) {
-    this.securityQueryRepository =
-      securityQueryRepository ?? new SecurityQueryRepository();
-  }
+@injectable()
+export class SecurityQueryService {
+  constructor(
+    @inject(SecurityQueryRepository)
+    private securityQueryRepository: SecurityQueryRepository,
+  ) {}
   async findManyByUserId(userId: string): Promise<DeviceListOutput[]> {
     return this.securityQueryRepository.findManyByUserId(userId);
   }
@@ -19,5 +20,3 @@ class SecurityQueryService {
     return this.securityQueryRepository.findByIdOrFail(deviceId);
   }
 }
-
-export const securityQueryService = new SecurityQueryService();

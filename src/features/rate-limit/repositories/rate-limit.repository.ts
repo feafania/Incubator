@@ -2,7 +2,9 @@ import { rateLimitCollection } from "../../../db/mongo.db";
 import { RateLimit } from "../domain/rate-limit";
 import { ObjectId } from "mongodb";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
+import { injectable } from "inversify";
 
+@injectable()
 export class RateLimitRepository {
   async add(request: RateLimit): Promise<RateLimit> {
     const insertResult = await rateLimitCollection.insertOne(request);

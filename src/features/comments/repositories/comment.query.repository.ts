@@ -6,7 +6,9 @@ import { commentCollection } from "../../../db/mongo.db";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
 import { mapToCommentListPaginatedOutput } from "../application/mappers/map-to-comment-list-paginated-output.util";
 import { mapToCommentOutput } from "../application/mappers/map-to-comment-output.util";
+import { injectable } from "inversify";
 
+@injectable()
 export class CommentQueryRepository {
   async findMany(
     queryDto: CommentListRequestPayload,

@@ -2,7 +2,9 @@ import { ObjectId, WithId } from "mongodb";
 import { commentCollection } from "../../../db/mongo.db";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
 import { CommentEntity } from "../domain/comment";
+import { injectable } from "inversify";
 
+@injectable()
 export class CommentsRepository {
   async findByIdOrFail(id: string): Promise<WithId<CommentEntity>> {
     let objectId: ObjectId;

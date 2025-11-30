@@ -2,12 +2,14 @@ import { CommentQueryRepository } from "../repositories/comment.query.repository
 import { CommentListRequestPayload } from "../routes/request-payloads/comment-list-request.payload";
 import { CommentListPaginatedOutput } from "./output/comment-list-paginated.output";
 import { CommentOutput } from "./output/comment.output";
+import { inject, injectable } from "inversify";
 
-class CommentQueryService {
-  private commentQueryRepository: CommentQueryRepository;
-  constructor() {
-    this.commentQueryRepository = new CommentQueryRepository();
-  }
+@injectable()
+export class CommentQueryService {
+  constructor(
+    @inject(CommentQueryRepository)
+    private commentQueryRepository: CommentQueryRepository,
+  ) {}
   async findMany(
     queryDto: CommentListRequestPayload,
   ): Promise<CommentListPaginatedOutput> {
@@ -25,5 +27,3 @@ class CommentQueryService {
     return this.commentQueryRepository.findByIdOrFail(id);
   }
 }
-
-export const commentQueryService = new CommentQueryService();

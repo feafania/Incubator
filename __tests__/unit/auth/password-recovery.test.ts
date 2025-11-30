@@ -14,12 +14,13 @@ jest.mock("../../../src/core/infrastructure/mailer/nodemailer.service", () => {
 });
 import { nodemailerService } from "../../../src/core/infrastructure/mailer/nodemailer.service";
 import { BadRequestError } from "../../../src/core/errors/bad-request.error";
+import { container } from "../../../src/composition-root";
 
 describe("AuthService — password recovery", () => {
   let authService: AuthService;
 
   beforeEach(() => {
-    authService = new AuthService();
+    authService = container.get<AuthService>(AuthService);
     authService["usersService"] = usersServiceMock;
     authService["usersRepository"] = usersRepositoryMock;
 

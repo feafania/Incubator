@@ -4,12 +4,13 @@ import {
   UpdateSessionCommand,
 } from "./command-handlers/session-commands";
 import { SessionEntity } from "../domain/session";
+import { inject, injectable } from "inversify";
 
+@injectable()
 export class SessionService {
-  private sessionRepository: SessionRepository;
-  constructor(sessionRepository?: SessionRepository) {
-    this.sessionRepository = sessionRepository ?? new SessionRepository();
-  }
+  constructor(
+    @inject(SessionRepository) private sessionRepository: SessionRepository,
+  ) {}
 
   async create(command: CreateSessionCommand): Promise<string> {
     const newSession = SessionEntity.create(command);
@@ -64,7 +65,3 @@ export class SessionService {
     return session;
   }
 }
-
-const sessionService = new SessionService();
-
-export default sessionService;

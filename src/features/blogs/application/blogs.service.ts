@@ -5,13 +5,14 @@ import {
   CreateBlogCommand,
   UpdateBlogCommand,
 } from "./command-handlers/blog-commands";
+import { inject, injectable } from "inversify";
 
+@injectable()
 export class BlogsService {
-  private blogsRepository: BlogsRepository;
-
-  constructor() {
-    this.blogsRepository = new BlogsRepository();
-  }
+  constructor(
+    @inject(BlogsRepository)
+    private blogsRepository: BlogsRepository,
+  ) {}
 
   async findByIdOrFail(id: string): Promise<WithId<Blog>> {
     return await this.blogsRepository.findByIdOrFail(id);
@@ -48,7 +49,3 @@ export class BlogsService {
     return;
   }
 }
-
-const blogsService = new BlogsService();
-
-export default blogsService;

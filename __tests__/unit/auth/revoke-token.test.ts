@@ -3,6 +3,13 @@ import { tokenHasher } from "../../../src/core/infrastructure/crypto/token-hashe
 import { BadRequestError } from "../../../src/core/errors/bad-request.error";
 import { authRepositoryMock } from "../../__mocks__/auth.repository.mock";
 import { usersRepositoryMock } from "../../__mocks__/users.repository.mock";
+import { UsersRepository } from "../../../src/features/users/repositories/users.repository";
+import { AuthRepository } from "../../../src/features/auth/repositories/auth.repository";
+import { Container } from "inversify";
+import { UsersService } from "../../../src/features/users/application/users.service";
+import { SessionService } from "../../../src/features/auth/application/session.service";
+import { usersServiceMock } from "../../__mocks__/users.service.mock";
+import { SessionRepository } from "../../../src/features/auth/repositories/session.repository";
 
 describe("AuthService - token methods", () => {
   let authService: AuthService;
@@ -13,11 +20,15 @@ describe("AuthService - token methods", () => {
   };
 
   beforeEach(() => {
-    authService = new AuthService(
-      undefined,
-      usersRepositoryMock,
-      authRepositoryMock,
-    );
+    const container = new Container();
+    container.bind(UsersRepository).toConstantValue(usersRepositoryMock);
+    container.bind(AuthRepository).toConstantValue(authRepositoryMock);
+    container.bind(UsersService).toConstantValue(usersServiceMock);
+    container.bind(SessionService).toSelf();
+    container.bind(SessionRepository).toSelf();
+    container.bind(AuthService).toSelf();
+    authService = container.get<AuthService>(AuthService);
+
     jest
       .spyOn(tokenHasher, "generateHash")
       .mockImplementation((token: string) => {

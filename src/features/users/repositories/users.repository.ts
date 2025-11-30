@@ -2,7 +2,9 @@ import { User } from "../domain/user";
 import { ObjectId, WithId } from "mongodb";
 import { userCollection } from "../../../db/mongo.db";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
+import { injectable } from "inversify";
 
+@injectable()
 export class UsersRepository {
   async findByIdOrFail(id: string): Promise<WithId<User>> {
     let objectId: ObjectId;

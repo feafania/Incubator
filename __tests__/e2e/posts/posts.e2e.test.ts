@@ -21,7 +21,6 @@ import { Post } from "../../../src/features/posts/domain/posts";
 import { createApp } from "../../create-app";
 import { mapToPostOutput } from "../../../src/features/posts/application/mappers/map-to-post-output.util";
 import { ObjectId, WithId } from "mongodb";
-import { PostDomainDto } from "../../../src/features/posts/domain/post-domain.dto";
 
 const agent = request.agent(createApp()); // для захаваньня сэссый паміж запытамі, іначай  request(app)
 let mongoServer: MongoMemoryServer; // Общий сервер для всех тестов
@@ -40,7 +39,7 @@ describe("tests for /posts", () => {
     // Падключэнне да часовага MongoDB
     await runDB(uri);
     // console.log(await postCollection.find().toArray())
-    const info = await setMongoDB(postCollection, []);
+    await setMongoDB(postCollection, []);
   });
 
   afterAll(async () => {
@@ -175,7 +174,7 @@ describe("tests for /posts", () => {
       shortDescription: "Stories about my life",
       content: "about stories",
     };
-    const res = await agent
+    await agent
       .set("Authorization", "Basic " + codedAuthorization)
       .put(SETTINGS.PATH.POSTS + "/" + updatePost._id)
       .send(updatePost) // отправка данных
@@ -192,10 +191,10 @@ describe("tests for /posts", () => {
       blogId: blog1._id.toString(),
       createdAt: new Date("2024-11-10T14:30:00Z"),
       updatedAt: new Date("2024-11-10T14:30:00Z"),
-      update(dto: PostDomainDto) {},
+      update() {},
     };
 
-    const res = await agent
+    await agent
       .set("Authorization", "Basic " + codedAuthorization)
       .put(SETTINGS.PATH.POSTS + "/" + updatePost._id)
       .send(updatePost) // отправка данных
@@ -207,16 +206,16 @@ describe("tests for /posts", () => {
     await setMongoDB(postCollection, datasetPostValid);
     const updatePost: Post = {
       _id: post1._id,
-      title: "Stories dfsdfsk dsfsfs sdfsfsf fdsfsd dsfsfs",
+      title: "Stories stories stories stories stories stories",
       shortDescription: "Stories about my life",
       content: "about stories",
       blogId: blog1._id.toString(),
       createdAt: new Date("2024-11-10T14:30:00Z"),
       updatedAt: new Date("2024-11-10T14:30:00Z"),
-      update(dto: PostDomainDto) {},
+      update() {},
     };
 
-    const res = await agent
+    await agent
       .set("Authorization", "Basic " + codedAuthorization)
       .put(SETTINGS.PATH.POSTS + "/" + updatePost._id)
       .send(updatePost) // отправка данных
@@ -245,7 +244,7 @@ describe("tests for /posts", () => {
   });
 
   it("shouldn't delete not-existing post", async () => {
-    const res = await agent
+    await agent
       .set("Authorization", "Basic " + codedAuthorization)
       .delete(SETTINGS.PATH.POSTS + "/-1")
       .expect(HTTP_STATUSES.NOT_FOUND_404);
@@ -253,7 +252,7 @@ describe("tests for /posts", () => {
 
   it("should delete all posts", async () => {
     await setMongoDB(postCollection, datasetPostValid);
-    const res = await agent
+    await agent
       .delete(SETTINGS.PATH.POSTS)
       .expect(HTTP_STATUSES.NO_CONTENT_204);
     console.log(await postCollection.find().toArray());

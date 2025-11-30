@@ -15,13 +15,14 @@ import { ConfirmRegistrationCommand } from "../../../src/features/auth/applicati
 import { ResendEmailCommand } from "../../../src/features/auth/application/command-handlers/resend-email-commands";
 import { usersRepositoryMock } from "../../__mocks__/users.repository.mock";
 import { usersServiceMock } from "../../__mocks__/users.service.mock";
+import { container } from "../../../src/composition-root";
 
 describe("AuthService", () => {
   let authService: AuthService;
 
   beforeEach(() => {
     // Створым AuthService і падменім рэальныя сэрвісы на моки
-    authService = new AuthService();
+    authService = container.get<AuthService>(AuthService);
     authService["usersService"] = usersServiceMock;
     authService["usersRepository"] = usersRepositoryMock;
 

@@ -2,7 +2,9 @@ import { ObjectId, WithId } from "mongodb";
 import { Blog } from "../domain/blogs";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
 import { blogCollection } from "../../../db/mongo.db";
+import { injectable } from "inversify";
 
+@injectable()
 export class BlogsRepository {
   async findByIdOrFail(id: string): Promise<WithId<Blog>> {
     let objectId: ObjectId;

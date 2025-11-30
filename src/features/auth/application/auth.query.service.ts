@@ -2,12 +2,13 @@ import { AuthQueryRepository } from "../repositories/auth.query.repository";
 import { LoginOutput } from "./output/login.output";
 import { MeOutput } from "./output/me.output";
 import { RecoveryPasswordOutput } from "./output/recovery-password.output";
+import { inject } from "inversify";
 
-class AuthQueryService {
-  private authQueryRepository: AuthQueryRepository;
-  constructor() {
-    this.authQueryRepository = new AuthQueryRepository();
-  }
+export class AuthQueryService {
+  constructor(
+    @inject(AuthQueryRepository)
+    private authQueryRepository: AuthQueryRepository,
+  ) {}
 
   async getUserByLoginOrEmail(
     loginOrEmail: string,
@@ -33,5 +34,3 @@ class AuthQueryService {
     return this.authQueryRepository.findByIdOrFail(id);
   }
 }
-
-export const authQueryService = new AuthQueryService();

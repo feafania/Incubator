@@ -9,7 +9,9 @@ import { SETTINGS } from "../../../core/settings/settings";
 import { mapToMongoSortDirection } from "../../../core/helpers/map-to-mongo-sort-direction.util";
 import { Post } from "../domain/posts";
 import { mapToPostOutput } from "../application/mappers/map-to-post-output.util";
+import { injectable } from "inversify";
 
+@injectable()
 export class PostQueryRepository {
   async findMany(
     queryDto: PostListRequestPayload,

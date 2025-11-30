@@ -12,13 +12,13 @@ import { User } from "../domain/user";
 import { randomUUID } from "node:crypto";
 import { SETTINGS } from "../../../core/settings/settings";
 import { WithId } from "mongodb";
-import { userCollection } from "../../../db/mongo.db";
+import { inject, injectable } from "inversify";
 
+@injectable()
 export class UsersService {
-  private usersRepository: UsersRepository;
-  constructor() {
-    this.usersRepository = new UsersRepository();
-  }
+  constructor(
+    @inject(UsersRepository) private usersRepository: UsersRepository,
+  ) {}
 
   async create(
     command: CreateUserCommand,
@@ -91,7 +91,3 @@ export class UsersService {
     return this.usersRepository.findByLogin(email);
   }
 }
-
-const usersService = new UsersService();
-
-export default usersService;

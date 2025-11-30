@@ -12,7 +12,6 @@ import { UsersRepository } from "../../../src/features/users/repositories/users.
 describe("Auth API /auth/registration", () => {
   let app: Express;
   let mongoServer: MongoMemoryServer;
-  const usersRepository = new UsersRepository();
 
   beforeAll(async () => {
     const setup = await createTestApp();

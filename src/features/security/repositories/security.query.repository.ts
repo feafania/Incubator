@@ -3,7 +3,9 @@ import { DeviceListOutput } from "../application/output/device-list.output";
 import { sessionCollection } from "../../../db/mongo.db";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
 import { mapToDeviceOutput } from "../application/mappers/map-to-device-list-output.util";
+import { injectable } from "inversify";
 
+@injectable()
 export class SecurityQueryRepository {
   async findManyByUserId(userId: string): Promise<DeviceListOutput[]> {
     const items = await sessionCollection.find({ userId }).toArray();

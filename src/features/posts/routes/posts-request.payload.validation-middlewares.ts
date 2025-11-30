@@ -1,7 +1,8 @@
 import { body } from "express-validator";
-import blogsService from "../../blogs/application/blogs.service";
 import { commentContentValidation } from "../../comments/routes/comment-request.payload.validation-middlewares";
 import { idValidation } from "../../../core/middlewares/validation/params-id.validation-middleware";
+import { container } from "../../../composition-root";
+import { BlogsService } from "../../blogs/application/blogs.service";
 
 const postTitleInputValidator = body("title")
   .isString()
@@ -29,6 +30,7 @@ const postBlogIdInputValidator = body("blogId")
   .isLength({ min: 1 })
   .withMessage("The blogId should be from 1 to 1000 symbols")
   .custom(async (blogId, { req }) => {
+    const blogsService = container.get<BlogsService>(BlogsService);
     const blog = await blogsService.findIndex(blogId);
     if (!blog) {
       throw new Error("There is no blog ID");
