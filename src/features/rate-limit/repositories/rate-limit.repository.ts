@@ -1,20 +1,16 @@
-import { rateLimitCollection } from "../../../db/mongo.db";
-import { RateLimit } from "../domain/rate-limit";
-import { ObjectId } from "mongodb";
+import { RateLimitDocument, RateLimitModel } from "../domain/rate-limit";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
 import { injectable } from "inversify";
+import mongoose from "mongoose";
 
 @injectable()
 export class RateLimitRepository {
-  async add(request: RateLimit): Promise<RateLimit> {
-    const insertResult = await rateLimitCollection.insertOne(request);
-    request._id = insertResult.insertedId;
-
-    return request;
+  async add(request: RateLimitDocument): Promise<RateLimitDocument> {
+    return await request.save();
   }
 
   async countRecent(ip: string, url: string, since: Date): Promise<number> {
-    return rateLimitCollection.countDocuments({
+    return RateLimitModel.countDocuments({
       ip,
       url,
       createdAt: { $gte: since },
@@ -22,16 +18,12 @@ export class RateLimitRepository {
   }
 
   async delete(id: string): Promise<void> {
-    let objectId: ObjectId;
-
-    try {
-      objectId = new ObjectId(id);
-    } catch {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new RepositoryNotFoundError("Request not exist");
     }
 
-    const deleteResult = await rateLimitCollection.deleteOne({
-      _id: objectId,
+    const deleteResult = await RateLimitModel.deleteOne({
+      _id: new mongoose.Types.ObjectId(id),
     });
 
     if (deleteResult.deletedCount < 1) {
@@ -43,6 +35,6 @@ export class RateLimitRepository {
   }
 
   async deleteMany(): Promise<void> {
-    await rateLimitCollection.deleteMany({});
+    await RateLimitModel.deleteMany({});
   }
 }

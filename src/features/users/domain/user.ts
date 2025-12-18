@@ -1,36 +1,72 @@
-import { ObjectId, WithId } from "mongodb";
 import { UserDomainDto } from "./user-domain.dto";
 import { ClassFieldsOnly } from "../../../core/types/fields-only";
 import { EmailConfirmationDomainDto } from "./email-confirmation-domain.dto";
 import { PasswordRecoveryDomainDto } from "./password-recovery-domain.dto";
+import { ClassMethodsOnly } from "../../../core/types/methods-only";
+import mongoose, { HydratedDocument, model, Model } from "mongoose";
+import { SETTINGS } from "../../../core/settings/settings";
+
+type UserType = ClassFieldsOnly<User>;
+
+type UserMethods = ClassMethodsOnly<User>;
+
+type UserStatics = typeof User;
+
+type UserModelType = Model<UserType, {}, UserMethods> & UserStatics;
+
+export type UserDocument = HydratedDocument<UserType, UserMethods>;
+
+const EmailConfirmationSchema = new mongoose.Schema(
+  {
+    confirmationCode: { type: String },
+    expiresAt: {
+      type: Date,
+      default: Date.now,
+    },
+    isConfirmed: { type: Boolean },
+  },
+  { _id: false, timestamps: false },
+);
+
+const PasswordRecoverySchema = new mongoose.Schema(
+  {
+    recoveryCode: { type: String },
+    expiresAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false, timestamps: false },
+);
+
+const userSchema = new mongoose.Schema<UserType, UserModelType, UserMethods>({
+  login: { type: String, required: true },
+  email: { type: String, required: true },
+  passwordHash: { type: String, required: true },
+  emailConfirmation: { type: EmailConfirmationSchema },
+  passwordRecovery: { type: PasswordRecoverySchema },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    immutable: true,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
 export class User {
-  _id?: ObjectId;
-  login: string;
-  email: string;
-  passwordHash: string;
-  emailConfirmation: EmailConfirmationDomainDto;
-  passwordRecovery: PasswordRecoveryDomainDto;
-  createdAt: Date;
-  updatedAt: Date;
-
-  private constructor(dto: ClassFieldsOnly<User>) {
-    this.login = dto.login;
-    this.email = dto.email;
-    this.passwordHash = dto.passwordHash;
-    this.emailConfirmation = dto.emailConfirmation;
-    this.passwordRecovery = dto.passwordRecovery;
-
-    this.createdAt = dto.createdAt;
-    this.updatedAt = dto.updatedAt;
-
-    if (dto._id) {
-      this._id = dto._id;
-    }
-  }
+  declare login: string;
+  declare email: string;
+  declare passwordHash: string;
+  declare emailConfirmation: EmailConfirmationDomainDto;
+  declare passwordRecovery: PasswordRecoveryDomainDto;
+  declare createdAt: Date;
+  declare updatedAt: Date;
 
   static create(dto: UserDomainDto) {
-    return new User({
+    return new UserModel({
       login: dto.login,
       email: dto.email,
       passwordHash: dto.passwordHash,
@@ -43,9 +79,6 @@ export class User {
         recoveryCode: "",
         expiresAt: new Date(),
       },
-
-      createdAt: new Date(),
-      updatedAt: new Date(),
     });
   }
 
@@ -57,10 +90,11 @@ export class User {
 
     this.updatedAt = new Date();
   }
-
-  static reconstitute(dto: ClassFieldsOnly<User>): WithId<User> {
-    const instance = new User(dto);
-
-    return instance as WithId<User>;
-  }
 }
+
+userSchema.loadClass(User);
+
+export const UserModel = model<UserType, UserModelType>(
+  SETTINGS.COLLECTIONS.USERS,
+  userSchema,
+);

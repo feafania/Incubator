@@ -1,9 +1,8 @@
-import { WithId } from "mongodb";
-import { User } from "../../../users/domain/user";
+import { UserDocument } from "../../../users/domain/user";
 import { RecoveryPasswordOutput } from "../output/recovery-password.output";
 
 export function mapToRecoveryPasswordOutput(
-  user: WithId<User>,
+  user: UserDocument,
 ): RecoveryPasswordOutput {
   return {
     id: user._id.toString(),

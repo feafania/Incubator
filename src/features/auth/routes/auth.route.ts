@@ -19,7 +19,7 @@ import {
 } from "../../../core/paths/paths";
 import { refreshTokenGuardMiddleware } from "../../../auth/middlewares/refresh-token-guard.middleware";
 import { rateLimitMiddleware } from "../../rate-limit/middlewares/rate-limit.middleware";
-import { refreshSessionGuardMiddleware } from "../../../core/refresh-session-guard.middleware";
+import { refreshSessionGuardMiddleware } from "../../../core/middlewares/validation/refresh-session-guard.middleware";
 import { container } from "../../../composition-root";
 import { AuthController } from "./controllers/auth.controller";
 

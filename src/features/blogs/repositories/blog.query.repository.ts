@@ -1,14 +1,13 @@
-import { ObjectId, WithId } from "mongodb";
-import { blogCollection } from "../../../db/mongo.db";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
 import { BlogListRequestPayload } from "../routes/request-payloads/blog-list-request.payload";
-import { Blog } from "../domain/blogs";
+import { BlogDocument, BlogModel } from "../domain/blogs";
 import { BlogListPaginatedOutput } from "../application/output/blog-list-paginated.output";
 import { mapToMongoSortDirection } from "../../../core/helpers/map-to-mongo-sort-direction.util";
 import { mapToBlogListPaginatedOutput } from "../application/mappers/map-to-blog-pagination-output.util";
 import BlogOutput from "../application/output/blog.output";
 import { mapToBlogOutput } from "../application/mappers/map-to-blog-output.util";
 import { injectable } from "inversify";
+import mongoose from "mongoose";
 
 @injectable()
 export class BlogQueryRepository {
@@ -24,8 +23,7 @@ export class BlogQueryRepository {
       ? { name: { $regex: searchNameTerm, $options: "i" } }
       : {};
     // 'i' робіць неадчувальным для рэгістру
-    const items = (await blogCollection
-      .find(filter)
+    const items = (await BlogModel.find(filter)
       // "asc" (по возрастанию), то используется 1
       // "desc" — то -1 для сортировки по убыванию. - по алфавиту от Я-А, Z-A
       .sort({ [sortBy]: mapToMongoSortDirection(sortDirection) })
@@ -35,9 +33,9 @@ export class BlogQueryRepository {
 
       // ограничивает количество возвращаемых документов до значения pageSize
       .limit(pageSize)
-      .toArray()) as WithId<Blog>[];
+      .exec()) as BlogDocument[];
 
-    const totalCount = await blogCollection.countDocuments(filter);
+    const totalCount = await BlogModel.countDocuments(filter);
 
     return mapToBlogListPaginatedOutput(items, {
       pageNumber,
@@ -47,15 +45,11 @@ export class BlogQueryRepository {
   }
 
   async findByIdOrFail(id: string): Promise<BlogOutput> {
-    let objectId: ObjectId;
-
-    try {
-      objectId = new ObjectId(id);
-    } catch {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new RepositoryNotFoundError("Blog not exist");
     }
 
-    const blog = await blogCollection.findOne({ _id: objectId });
+    const blog = await BlogModel.findById(id);
 
     if (!blog) {
       throw new RepositoryNotFoundError("Blog not exist");

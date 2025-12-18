@@ -1,15 +1,14 @@
-import { ObjectId, WithId } from "mongodb";
 import { PostListPaginatedOutput } from "../application/output/post-list-paginated.output";
 import { PostListRequestPayload } from "../routes/request-payloads/post-list-request.payload";
-import { postCollection } from "../../../db/mongo.db";
 import PostOutput from "../application/output/post.output";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
 import { mapToPostListPaginatedOutput } from "../application/mappers/map-to-post-pagination-output.util";
 import { SETTINGS } from "../../../core/settings/settings";
 import { mapToMongoSortDirection } from "../../../core/helpers/map-to-mongo-sort-direction.util";
-import { Post } from "../domain/posts";
+import { PostDocument, PostModel } from "../domain/posts";
 import { mapToPostOutput } from "../application/mappers/map-to-post-output.util";
 import { injectable } from "inversify";
+import mongoose from "mongoose";
 
 @injectable()
 export class PostQueryRepository {
@@ -60,11 +59,11 @@ export class PostQueryRepository {
       { $limit: pageSize },
     ];
 
-    const items = (await postCollection
-      .aggregate(pipeline)
-      .toArray()) as (WithId<Post> & { blogName: string })[];
+    const items = await PostModel.aggregate<
+      PostDocument & { blogName: string }
+    >(pipeline).exec();
 
-    const totalCount = await postCollection.countDocuments(matchFilter);
+    const totalCount = await PostModel.countDocuments(matchFilter);
 
     return mapToPostListPaginatedOutput(items, {
       pageNumber,
@@ -74,16 +73,12 @@ export class PostQueryRepository {
   }
 
   async findByIdOrFail(id: string): Promise<PostOutput> {
-    let objectId: ObjectId;
-
-    try {
-      objectId = new ObjectId(id);
-    } catch {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new RepositoryNotFoundError("Post not exist");
     }
 
     const pipeline = [
-      { $match: { _id: objectId } },
+      { $match: { _id: new mongoose.Types.ObjectId(id) } },
       {
         // $lookup: {
         //   from: SETTINGS.COLLECTIONS.BLOGS,
@@ -103,9 +98,11 @@ export class PostQueryRepository {
       { $project: { blog: 0 } },
     ];
 
-    const post = await postCollection
-      .aggregate<Post & { _id: ObjectId; blogName: string }>(pipeline)
-      .next();
+    const items = await PostModel.aggregate<
+      PostDocument & { blogName: string }
+    >(pipeline).exec();
+
+    const post = items[0];
 
     if (!post) {
       throw new RepositoryNotFoundError("Post not exist");

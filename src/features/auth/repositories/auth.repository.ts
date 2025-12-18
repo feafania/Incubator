@@ -1,5 +1,4 @@
-import { revokedTokenCollection } from "../../../db/mongo.db";
-import { RevokedToken } from "../domain/revoked-token";
+import { RevokedToken, RevokedTokenModel } from "../domain/revoked-token";
 import { RevokedTokenDomainDto } from "../domain/revoked-token-domain.dto";
 import { tokenHasher } from "../../../core/infrastructure/crypto/token-hasher";
 import { injectable } from "inversify";
@@ -11,13 +10,13 @@ export class AuthRepository {
       ...revokedToken,
     });
 
-    await revokedTokenCollection.insertOne(entity);
+    await RevokedTokenModel.insertOne(entity);
   }
 
   async isTokenRevoked(token: string): Promise<boolean> {
     const hash = tokenHasher.generateHash(token);
 
-    const found = await revokedTokenCollection.findOne({
+    const found = await RevokedTokenModel.findOne({
       tokenHash: hash,
     });
 
@@ -25,6 +24,6 @@ export class AuthRepository {
   }
 
   async deleteMany(): Promise<void> {
-    await revokedTokenCollection.deleteMany({});
+    await RevokedTokenModel.deleteMany({});
   }
 }

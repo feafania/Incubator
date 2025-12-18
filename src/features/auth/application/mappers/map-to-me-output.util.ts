@@ -1,8 +1,7 @@
-import { WithId } from "mongodb";
 import { MeOutput } from "../output/me.output";
-import { User } from "../../../users/domain/user";
+import { UserDocument } from "../../../users/domain/user";
 
-export function mapToMeOutput(user: WithId<User>): MeOutput {
+export function mapToMeOutput(user: UserDocument): MeOutput {
   return {
     email: user.email,
     login: user.login,

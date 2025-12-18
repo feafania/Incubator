@@ -1,12 +1,13 @@
 import { UserListPaginatedOutput } from "../application/output/user-list-paginated.output";
-import { ObjectId } from "mongodb";
 import { UserListRequestPayload } from "../routes/request-payloads/user-list-request.payload";
 import { UserOutput } from "../application/output/user.output";
 import { mapToUserOutput } from "../application/mappers/map-to-user-output.util";
 import { mapToUserListPaginatedOutput } from "../application/mappers/map-to-user-list-paginated-output.util";
-import { userCollection } from "../../../db/mongo.db";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
 import { injectable } from "inversify";
+import mongoose from "mongoose";
+import { UserModel } from "../domain/user";
+import { mapToMongoSortDirection } from "../../../core/helpers/map-to-mongo-sort-direction.util";
 
 @injectable()
 export class UserQueryRepository {
@@ -40,13 +41,11 @@ export class UserQueryRepository {
     }
 
     const [items, totalCount] = await Promise.all([
-      userCollection
-        .find(filter)
-        .sort({ [sortBy]: sortDirection })
+      UserModel.find(filter)
+        .sort({ [sortBy]: mapToMongoSortDirection(sortDirection) })
         .skip(skip)
-        .limit(pageSize)
-        .toArray(),
-      userCollection.countDocuments(filter),
+        .limit(pageSize),
+      UserModel.countDocuments(filter),
     ]);
 
     return mapToUserListPaginatedOutput(items, {
@@ -57,14 +56,12 @@ export class UserQueryRepository {
   }
 
   async findByIdOrFail(id: string): Promise<UserOutput> {
-    let objectId: ObjectId;
-
-    try {
-      objectId = new ObjectId(id);
-    } catch {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new RepositoryNotFoundError("User not exist");
     }
-    const user = await userCollection.findOne({ _id: objectId });
+    const user = await UserModel.findOne({
+      _id: new mongoose.Types.ObjectId(id),
+    });
 
     if (!user) {
       throw new RepositoryNotFoundError("User not exist");

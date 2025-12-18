@@ -1,27 +1,24 @@
-import { ObjectId } from "mongodb";
 import { DeviceListOutput } from "../application/output/device-list.output";
-import { sessionCollection } from "../../../db/mongo.db";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
 import { mapToDeviceOutput } from "../application/mappers/map-to-device-list-output.util";
 import { injectable } from "inversify";
+import { SessionModel } from "../../auth/domain/session";
+import mongoose from "mongoose";
 
 @injectable()
 export class SecurityQueryRepository {
   async findManyByUserId(userId: string): Promise<DeviceListOutput[]> {
-    const items = await sessionCollection.find({ userId }).toArray();
+    const items = await SessionModel.find({ userId }).exec();
 
     return items.map(mapToDeviceOutput);
   }
 
   async findByIdOrFail(id: string): Promise<DeviceListOutput> {
-    let objectId: ObjectId;
-
-    try {
-      objectId = new ObjectId(id);
-    } catch {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new RepositoryNotFoundError("Session not exist");
     }
-    const session = await sessionCollection.findOne({ _id: objectId });
+
+    const session = await SessionModel.findOne(new mongoose.Types.ObjectId(id));
 
     if (!session) {
       throw new RepositoryNotFoundError("Session not exist");
@@ -30,7 +27,7 @@ export class SecurityQueryRepository {
   }
 
   async findByDeviceIdOrFail(deviceId: string): Promise<DeviceListOutput> {
-    const session = await sessionCollection.findOne({ deviceId });
+    const session = await SessionModel.findOne({ deviceId });
 
     if (!session) {
       throw new RepositoryNotFoundError("Session not exist");

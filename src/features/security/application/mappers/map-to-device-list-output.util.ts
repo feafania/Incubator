@@ -1,10 +1,7 @@
-import { WithId } from "mongodb";
 import { DeviceListOutput } from "../output/device-list.output";
-import { SessionEntity } from "../../../auth/domain/session";
+import { SessionDocument } from "../../../auth/domain/session";
 
-export function mapToDeviceOutput(
-  session: WithId<SessionEntity>,
-): DeviceListOutput {
+export function mapToDeviceOutput(session: SessionDocument): DeviceListOutput {
   return {
     ip: session.ip ?? "",
     title: session.deviceName ?? "",

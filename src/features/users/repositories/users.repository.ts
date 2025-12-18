@@ -1,82 +1,48 @@
-import { User } from "../domain/user";
-import { ObjectId, WithId } from "mongodb";
-import { userCollection } from "../../../db/mongo.db";
+import { UserDocument, UserModel } from "../domain/user";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
 import { injectable } from "inversify";
+import mongoose from "mongoose";
 
 @injectable()
 export class UsersRepository {
-  async findByIdOrFail(id: string): Promise<WithId<User>> {
-    let objectId: ObjectId;
-
-    try {
-      objectId = new ObjectId(id);
-    } catch {
+  async findByIdOrFail(id: string): Promise<UserDocument> {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new RepositoryNotFoundError("User not exist");
     }
-    const res = await userCollection.findOne({ _id: objectId });
+    const res = await UserModel.findById(id);
 
     if (!res) {
       throw new RepositoryNotFoundError("User not exist");
     }
 
-    return User.reconstitute(res);
+    return res;
   }
 
-  async findByLogin(login: string): Promise<WithId<User> | null> {
-    const res = await userCollection.findOne({ login });
-    return res ? User.reconstitute(res) : null;
+  async findByLogin(login: string): Promise<UserDocument | null> {
+    const res = await UserModel.findOne({ login });
+    return res ? res : null;
   }
 
-  async findByEmail(email: string): Promise<WithId<User> | null> {
-    const res = await userCollection.findOne({ email });
-    return res ? User.reconstitute(res) : null;
+  async findByEmail(email: string): Promise<UserDocument | null> {
+    const res = await UserModel.findOne({ email });
+    return res ? res : null;
   }
 
-  async save(user: User): Promise<User> {
-    if (!user._id) {
-      const insertResult = await userCollection.insertOne(user);
-
-      user._id = insertResult.insertedId;
-
-      return user;
-    } else {
-      const { _id, ...dtoToUpdate } = user;
-
-      const updateResult = await userCollection.updateOne(
-        {
-          _id,
-        },
-        {
-          $set: {
-            ...dtoToUpdate,
-          },
-        },
-      );
-
-      if (updateResult.matchedCount < 1) {
-        throw new RepositoryNotFoundError("User not exist");
-      }
-
-      return user;
-    }
+  async save(user: UserDocument): Promise<UserDocument> {
+    console.log(user);
+    return user.save();
   }
 
   async delete(id: string): Promise<void> {
-    let objectId: ObjectId;
-
-    try {
-      objectId = new ObjectId(id);
-    } catch {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new RepositoryNotFoundError("User not exist");
     }
 
-    const deleteResult = await userCollection.deleteOne({
-      _id: objectId,
+    const deleteResult = await UserModel.deleteOne({
+      _id: new mongoose.Types.ObjectId(id),
     });
 
     if (deleteResult.deletedCount < 1) {
-      console.log("No user for delete");
       throw new RepositoryNotFoundError("User not exist");
     }
 
@@ -84,6 +50,6 @@ export class UsersRepository {
   }
 
   async deleteMany(): Promise<void> {
-    await userCollection.deleteMany({});
+    await UserModel.deleteMany({});
   }
 }

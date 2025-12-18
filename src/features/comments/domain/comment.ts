@@ -1,38 +1,62 @@
-import { ObjectId, WithId } from "mongodb";
 import { CommentDomainDto } from "./comment-domain.dto";
 import { ClassFieldsOnly } from "../../../core/types/fields-only";
 import { UpdateCommentDomainDto } from "./update-comment-domain.dto";
+import { ClassMethodsOnly } from "../../../core/types/methods-only";
+import mongoose, { HydratedDocument, model, Model } from "mongoose";
+import { SETTINGS } from "../../../core/settings/settings";
+
+type CommentType = ClassFieldsOnly<CommentEntity>;
+
+type CommentMethods = ClassMethodsOnly<CommentEntity>;
+
+type CommentStatics = typeof CommentEntity;
+
+type CommentModelType = Model<CommentType, {}, CommentMethods> & CommentStatics;
+
+export type CommentDocument = HydratedDocument<CommentType, CommentMethods>;
+
+const CommentatorInfoSchema = new mongoose.Schema(
+  {
+    userId: { type: String, required: true },
+    userLogin: { type: String },
+  },
+  { _id: false, timestamps: false },
+);
+
+const commentSchema = new mongoose.Schema<
+  CommentType,
+  CommentModelType,
+  CommentMethods
+>({
+  content: { type: String, required: true },
+  postId: { type: String, required: true },
+  commentatorInfo: { type: CommentatorInfoSchema },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    immutable: true,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
 export class CommentEntity {
-  _id?: ObjectId;
-  content: string;
-  postId: string;
-  commentatorInfo: {
+  declare content: string;
+  declare postId: string;
+  declare commentatorInfo: {
     userId: string;
     userLogin: string;
   };
-  createdAt: Date;
-  updatedAt: Date;
-
-  private constructor(dto: ClassFieldsOnly<CommentEntity>) {
-    this.content = dto.content;
-    this.postId = String(dto.postId);
-    this.commentatorInfo = dto.commentatorInfo;
-    this.createdAt = dto.createdAt;
-    this.updatedAt = dto.updatedAt;
-
-    if (dto._id) {
-      this._id = dto._id;
-    }
-  }
+  declare createdAt: Date;
+  declare updatedAt: Date;
 
   static create(dto: CommentDomainDto) {
-    return new CommentEntity({
+    return new CommentModel({
       content: dto.content,
       postId: dto.postId,
       commentatorInfo: dto.commentatorInfo,
-      createdAt: new Date(),
-      updatedAt: new Date(),
     });
   }
 
@@ -40,12 +64,11 @@ export class CommentEntity {
     this.content = dto.content;
     this.updatedAt = new Date();
   }
-
-  static reconstitute(
-    dto: ClassFieldsOnly<CommentEntity>,
-  ): WithId<CommentEntity> {
-    const instance = new CommentEntity(dto);
-
-    return instance as WithId<CommentEntity>;
-  }
 }
+
+commentSchema.loadClass(CommentEntity);
+
+export const CommentModel = model<CommentType, CommentModelType>(
+  SETTINGS.COLLECTIONS.COMMENTS,
+  commentSchema,
+);

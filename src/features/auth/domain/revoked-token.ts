@@ -1,44 +1,67 @@
-import { ObjectId, WithId } from "mongodb";
 import { ClassFieldsOnly } from "../../../core/types/fields-only";
 import { RevokedTokenDomainDto } from "./revoked-token-domain.dto";
+import { ClassMethodsOnly } from "../../../core/types/methods-only";
+import mongoose, { HydratedDocument, model, Model } from "mongoose";
+import { SETTINGS } from "../../../core/settings/settings";
+
+type RevokedTokenType = ClassFieldsOnly<RevokedToken>;
+
+type RevokedTokenMethods = ClassMethodsOnly<RevokedToken>;
+
+type RevokedTokenStatics = typeof RevokedToken;
+
+type RevokedTokenModelType = Model<RevokedTokenType, {}, RevokedTokenMethods> &
+  RevokedTokenStatics;
+
+export type RevokedTokenDocument = HydratedDocument<
+  RevokedTokenType,
+  RevokedTokenMethods
+>;
+
+const revokedTokenSchema = new mongoose.Schema<
+  RevokedTokenType,
+  RevokedTokenModelType,
+  RevokedTokenMethods
+>(
+  {
+    tokenHash: { type: String, required: true },
+    userId: { type: String, required: true },
+    deviceId: { type: String, default: null },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+      immutable: true,
+    },
+    expiresAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  {
+    collection: SETTINGS.COLLECTIONS.REVOKED_TOKENS,
+  },
+);
 
 export class RevokedToken {
-  _id?: ObjectId;
-  tokenHash: string;
-  userId: string;
-  deviceId: string | null = null;
-  createdAt: Date;
-  expiresAt: Date;
-
-  private constructor(dto: ClassFieldsOnly<RevokedToken>) {
-    this.tokenHash = dto.tokenHash;
-    this.userId = dto.userId;
-    this.deviceId = dto.deviceId;
-
-    this.createdAt = dto.createdAt;
-    this.expiresAt = dto.expiresAt;
-
-    if (dto._id) {
-      this._id = dto._id;
-    }
-  }
+  declare tokenHash: string;
+  declare userId: string;
+  declare deviceId: string | null;
+  declare createdAt: Date;
+  declare expiresAt: Date;
 
   static create(dto: RevokedTokenDomainDto) {
-    return new RevokedToken({
+    return new RevokedTokenModel({
       tokenHash: dto.tokenHash,
       userId: dto.userId,
       deviceId: dto.deviceId,
-
-      createdAt: new Date(),
       expiresAt: dto.expiresAt,
     });
   }
-
-  static reconstitute(
-    dto: ClassFieldsOnly<RevokedToken>,
-  ): WithId<RevokedToken> {
-    const instance = new RevokedToken(dto);
-
-    return instance as WithId<RevokedToken>;
-  }
 }
+
+revokedTokenSchema.loadClass(RevokedToken);
+
+export const RevokedTokenModel = model<RevokedTokenType, RevokedTokenModelType>(
+  SETTINGS.COLLECTIONS.REVOKED_TOKENS,
+  revokedTokenSchema,
+);

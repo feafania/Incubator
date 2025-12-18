@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { HTTP_STATUSES } from "./types/http-statuses";
-import { container } from "../composition-root";
-import { SessionService } from "../features/auth/application/session.service";
-import { AuthService } from "../features/auth/application/auth.service";
-import { AuthQueryService } from "../features/auth/application/auth.query.service";
+import { HTTP_STATUSES } from "../../types/http-statuses";
+import { container } from "../../../composition-root";
+import { SessionService } from "../../../features/auth/application/session.service";
+import { AuthService } from "../../../features/auth/application/auth.service";
+import { AuthQueryService } from "../../../features/auth/application/auth.query.service";
 
 export async function refreshSessionGuardMiddleware(
   req: Request,

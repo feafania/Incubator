@@ -1,17 +1,9 @@
-import {
-  Collection,
-  InsertManyResult,
-  ObjectId,
-  OptionalUnlessRequiredId,
-  WithId,
-} from "mongodb";
-import { Blog } from "../../src/features/blogs/domain/blogs";
-import { Post } from "../../src/features/posts/domain/posts";
 import { PostDomainDto } from "../../src/features/posts/domain/post-domain.dto";
 import { BlogDomainDto } from "../../src/features/blogs/domain/blog-domain.dto";
+import mongoose, { Model } from "mongoose";
 
-export const blog1: WithId<Blog> = {
-  _id: new ObjectId(),
+export const blog1 = {
+  _id: new mongoose.Types.ObjectId(),
   name: "t" + Date.now() + Math.random(),
   description: "a" + Date.now() + Math.random(),
   websiteUrl: "https://t" + Date.now() + Math.random(),
@@ -21,8 +13,8 @@ export const blog1: WithId<Blog> = {
   update(dto: BlogDomainDto) {},
 };
 
-export const blog2: WithId<Blog> = {
-  _id: new ObjectId(),
+export const blog2 = {
+  _id: new mongoose.Types.ObjectId(),
   name: "p" + Date.now() + Math.random(),
   description: "n" + Date.now() + Math.random(),
   websiteUrl: "https://t" + Date.now() + Math.random(),
@@ -32,8 +24,8 @@ export const blog2: WithId<Blog> = {
   update(dto: BlogDomainDto) {},
 };
 
-export const blog3: WithId<Blog> = {
-  _id: new ObjectId(),
+export const blog3 = {
+  _id: new mongoose.Types.ObjectId(),
   name: "j" + Date.now() + Math.random(),
   description: "a" + Date.now() + Math.random(),
   websiteUrl: "https://t" + Date.now() + Math.random(),
@@ -43,8 +35,8 @@ export const blog3: WithId<Blog> = {
   update(dto: BlogDomainDto) {},
 };
 
-export const blog4: WithId<Blog> = {
-  _id: new ObjectId(),
+export const blog4 = {
+  _id: new mongoose.Types.ObjectId(),
   name: "t" + Date.now() + Math.random(),
   description: "a" + Date.now() + Math.random(),
   websiteUrl: "https://t" + Date.now() + Math.random(),
@@ -54,8 +46,8 @@ export const blog4: WithId<Blog> = {
   update(dto: BlogDomainDto) {},
 };
 
-export const blog5: WithId<Blog> = {
-  _id: new ObjectId(),
+export const blog5 = {
+  _id: new mongoose.Types.ObjectId(),
   name: "",
   description: "a" + Date.now() + Math.random(),
   websiteUrl: "https://t" + Date.now() + Math.random(),
@@ -65,8 +57,8 @@ export const blog5: WithId<Blog> = {
   update(dto: BlogDomainDto) {},
 };
 
-export const blog6: WithId<Blog> = {
-  _id: new ObjectId(),
+export const blog6 = {
+  _id: new mongoose.Types.ObjectId(),
   name: "thjhhhhhhhgff ffghhg ghf",
   description: "a" + Date.now() + Math.random(),
   websiteUrl: "https://t" + Date.now() + Math.random(),
@@ -76,8 +68,8 @@ export const blog6: WithId<Blog> = {
   update(dto: BlogDomainDto) {},
 };
 
-export const blog7: WithId<Blog> = {
-  _id: new ObjectId(),
+export const blog7 = {
+  _id: new mongoose.Types.ObjectId(),
   name: "t" + Date.now() + Math.random(),
   description: "",
   websiteUrl: "https://t" + Date.now() + Math.random(),
@@ -87,8 +79,8 @@ export const blog7: WithId<Blog> = {
   update(dto: BlogDomainDto) {},
 };
 
-export const blog8: WithId<Blog> = {
-  _id: new ObjectId(),
+export const blog8 = {
+  _id: new mongoose.Types.ObjectId(),
   name: "t" + Date.now() + Math.random(),
   description: "a" + Date.now() + Math.random(),
   websiteUrl: "",
@@ -98,8 +90,8 @@ export const blog8: WithId<Blog> = {
   update(dto: BlogDomainDto) {},
 };
 
-export const blog9: WithId<Blog> = {
-  _id: new ObjectId(),
+export const blog9 = {
+  _id: new mongoose.Types.ObjectId(),
   name: "t" + Date.now() + Math.random(),
   description: "a" + Date.now() + Math.random(),
   websiteUrl: "fgdggdf" + Date.now() + Math.random(),
@@ -109,22 +101,12 @@ export const blog9: WithId<Blog> = {
   update(dto: BlogDomainDto) {},
 };
 
-export const datasetBlogValid: WithId<Blog>[] = [blog1, blog2, blog3, blog4];
-export const datasetBlogNotValid1: WithId<Blog>[] = [
-  blog5,
-  blog6,
-  blog7,
-  blog8,
-];
-export const datasetBlogNotValid2: WithId<Blog>[] = [
-  blog1,
-  blog2,
-  blog6,
-  blog9,
-];
+export const datasetBlogValid = [blog1, blog2, blog3, blog4];
+export const datasetBlogNotValid1 = [blog5, blog6, blog7, blog8];
+export const datasetBlogNotValid2 = [blog1, blog2, blog6, blog9];
 
-export const post1: OptionalUnlessRequiredId<Post> = {
-  _id: new ObjectId(),
+export const post1 = {
+  _id: new mongoose.Types.ObjectId(),
   title: "t" + Date.now(),
   shortDescription: "a" + Date.now() + Math.random(),
   content: "about " + Date.now() + Math.random(),
@@ -134,8 +116,8 @@ export const post1: OptionalUnlessRequiredId<Post> = {
   update(dto: PostDomainDto) {},
 };
 
-export const post2: OptionalUnlessRequiredId<Post> = {
-  _id: new ObjectId(),
+export const post2 = {
+  _id: new mongoose.Types.ObjectId(),
   title: "b" + Date.now(),
   shortDescription: "a" + Date.now() + Math.random(),
   content: "about " + Date.now() + Math.random(),
@@ -145,8 +127,8 @@ export const post2: OptionalUnlessRequiredId<Post> = {
   update(dto: PostDomainDto) {},
 };
 
-export const post3: OptionalUnlessRequiredId<Post> = {
-  _id: new ObjectId(),
+export const post3 = {
+  _id: new mongoose.Types.ObjectId(),
   title: "c" + Date.now(),
   shortDescription: "a" + Date.now() + Math.random(),
   content: "about " + Date.now() + Math.random(),
@@ -156,8 +138,8 @@ export const post3: OptionalUnlessRequiredId<Post> = {
   update(dto: PostDomainDto) {},
 };
 
-export const post4: OptionalUnlessRequiredId<Post> = {
-  _id: new ObjectId(),
+export const post4 = {
+  _id: new mongoose.Types.ObjectId(),
   title: "f" + Date.now(),
   shortDescription: "a" + Date.now() + Math.random(),
   content: "about " + Date.now() + Math.random(),
@@ -167,8 +149,8 @@ export const post4: OptionalUnlessRequiredId<Post> = {
   update(dto: PostDomainDto) {},
 };
 
-export const post5: OptionalUnlessRequiredId<Post> = {
-  _id: new ObjectId(),
+export const post5 = {
+  _id: new mongoose.Types.ObjectId(),
   title: "",
   shortDescription: "a" + Date.now() + Math.random(),
   content: "about " + Date.now() + Math.random(),
@@ -178,8 +160,8 @@ export const post5: OptionalUnlessRequiredId<Post> = {
   update(dto: PostDomainDto) {},
 };
 
-export const post6: OptionalUnlessRequiredId<Post> = {
-  _id: new ObjectId(),
+export const post6 = {
+  _id: new mongoose.Types.ObjectId(),
   title: "t" + Date.now(),
   shortDescription: "",
   content: "about " + Date.now() + Math.random(),
@@ -189,8 +171,8 @@ export const post6: OptionalUnlessRequiredId<Post> = {
   update(dto: PostDomainDto) {},
 };
 
-export const post7: OptionalUnlessRequiredId<Post> = {
-  _id: new ObjectId(),
+export const post7 = {
+  _id: new mongoose.Types.ObjectId(),
   title: "a".repeat(40),
   shortDescription: "a".repeat(40),
   content: "about " + Date.now() + Math.random(),
@@ -200,8 +182,8 @@ export const post7: OptionalUnlessRequiredId<Post> = {
   update(dto: PostDomainDto) {},
 };
 
-export const post8: OptionalUnlessRequiredId<Post> = {
-  _id: new ObjectId(),
+export const post8 = {
+  _id: new mongoose.Types.ObjectId(),
   title: "t" + Date.now(),
   shortDescription: "a".repeat(150),
   content: "about " + Date.now() + Math.random(),
@@ -211,8 +193,8 @@ export const post8: OptionalUnlessRequiredId<Post> = {
   update(dto: PostDomainDto) {},
 };
 
-export const post9: OptionalUnlessRequiredId<Post> = {
-  _id: new ObjectId(),
+export const post9 = {
+  _id: new mongoose.Types.ObjectId(),
   title: "t" + Date.now(),
   shortDescription: "a" + Date.now() + Math.random(),
   content: "a".repeat(1150),
@@ -222,48 +204,25 @@ export const post9: OptionalUnlessRequiredId<Post> = {
   update(dto: PostDomainDto) {},
 };
 
-export const datasetPostValid: OptionalUnlessRequiredId<Post>[] = [
-  post1,
-  post2,
-  post3,
-  post4,
-];
-export const datasetPostNotValid1: OptionalUnlessRequiredId<Post>[] = [
-  post5,
-  post6,
-  post7,
-  post8,
-];
-export const datasetPostNotValid2: OptionalUnlessRequiredId<Post>[] = [
-  post1,
-  post2,
-  post6,
-  post9,
-];
+export const datasetPostValid = [post1, post2, post3, post4];
+export const datasetPostNotValid1 = [post5, post6, post7, post8];
+export const datasetPostNotValid2 = [post1, post2, post6, post9];
 
-export async function setMongoDB<T extends object>(
-  collection: Collection<T>,
-  dataset: OptionalUnlessRequiredId<T>[],
-): Promise<InsertManyResult<T> | null> {
-  //     collection.insertMany(dataset):
-  //      returns object:
-  //      	acknowledged — подтверждение успешной операции.
-  // 	        insertedCount — количество вставленных документов.
-  // 	        insertedIds — объект с ключами индексов вставленных элементов и их _id.
-
+export async function setMongoDB<T>(model: Model<T>, dataset: T[]) {
   try {
-    if ((await collection.countDocuments()) > 0) {
-      await collection.drop();
+    // Калі мадэль мае калекцыю і яна не пустая — скідваем
+    const count = await model.countDocuments();
+    if (count > 0) {
+      await model.collection.drop();
     }
+
     if (dataset.length > 0) {
-      return await collection.insertMany(dataset); //_id не обязателен, если оно не указано.
+      return await model.insertMany(dataset);
     }
+
     return null;
   } catch (error) {
-    console.error(
-      "An error occurred while initializing the collection:",
-      error,
-    );
+    console.error("Error initializing collection:", error);
     return null;
   }
 }

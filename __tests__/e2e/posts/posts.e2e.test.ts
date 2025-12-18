@@ -1,12 +1,5 @@
-import request from "supertest";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { SETTINGS } from "../../../src/core/settings/settings";
-import {
-  blogCollection,
-  client,
-  postCollection,
-  runDB,
-} from "../../../src/db/mongo.db";
 import {
   blog1,
   datasetBlogValid,
@@ -17,33 +10,40 @@ import {
 } from "../../utils/datasets";
 import CreatePostInputModel from "../../../src/features/posts/routes/request-payloads/create-post-request.payload";
 import { HTTP_STATUSES } from "../../../src/core/types/http-statuses";
-import { Post } from "../../../src/features/posts/domain/posts";
-import { createApp } from "../../create-app";
+import {
+  Post,
+  PostDocument,
+  PostModel,
+} from "../../../src/features/posts/domain/posts";
 import { mapToPostOutput } from "../../../src/features/posts/application/mappers/map-to-post-output.util";
-import { ObjectId, WithId } from "mongodb";
-
-const agent = request.agent(createApp()); // для захаваньня сэссый паміж запытамі, іначай  request(app)
-let mongoServer: MongoMemoryServer; // Общий сервер для всех тестов
+import { Express } from "express";
+import { createTestApp } from "../../create-test-app";
+import { ClassFieldsOnly } from "../../../src/core/types/fields-only";
+import { clearDb } from "../../utils/clear-db";
+import request from "supertest";
+import { Blog, BlogModel } from "../../../src/features/blogs/domain/blogs";
+import mongoose from "mongoose";
+import PostOutput from "../../../src/features/posts/application/output/post.output";
 
 // // работа с ид
 // new ObjectId(req.params.id)
 // createdInfo.id.toString()
 
 describe("tests for /posts", () => {
+  let app: Express;
+  let mongoServer: MongoMemoryServer;
+
   beforeAll(async () => {
     // Стварыць часовы сервер MongoDB
-    mongoServer = await MongoMemoryServer.create();
-    const uri = mongoServer.getUri();
-    // process.env.MONGO_URI = uri;
-
-    // Падключэнне да часовага MongoDB
-    await runDB(uri);
+    const setup = await createTestApp();
+    app = setup.app;
+    mongoServer = setup.mongoServer;
     // console.log(await postCollection.find().toArray())
-    await setMongoDB(postCollection, []);
+    setMongoDB<ClassFieldsOnly<Post>>(PostModel, []);
   });
 
   afterAll(async () => {
-    if (client) await client.close(); // Закрыць MongoClient
+    await clearDb(app);
     if (mongoServer) await mongoServer.stop({ doCleanup: true });
   });
 
@@ -51,7 +51,8 @@ describe("tests for /posts", () => {
   const codedAuthorization = bufferContent.toString("base64");
 
   it("should get empty posts array", async () => {
-    const res = await agent
+    const res = await request
+      .agent(app)
       .get(SETTINGS.PATH.POSTS)
       .expect(HTTP_STATUSES.OK_200);
 
@@ -69,8 +70,9 @@ describe("tests for /posts", () => {
   });
 
   it("should get not empty posts array", async () => {
-    await setMongoDB(postCollection, datasetPostValid); // заполнение базы данных начальными данными если нужно
-    const res = await agent
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid); // заполнение базы данных начальными данными если нужно
+    const res = await request
+      .agent(app)
       .get(SETTINGS.PATH.POSTS)
       .expect(HTTP_STATUSES.OK_200);
 
@@ -82,7 +84,7 @@ describe("tests for /posts", () => {
       [...datasetPostValid]
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .map((b) => {
-          return mapToPostOutput(b as WithId<Post> & { blogName: string });
+          return mapToPostOutput(b as PostDocument & { blogName: string });
         }),
     );
     expect(res.body.items).toEqual(sortedExpected);
@@ -102,7 +104,8 @@ describe("tests for /posts", () => {
   };
 
   it("shouldn't create posts without authorization", async () => {
-    const res = await agent
+    const res = await request
+      .agent(app)
       .post(SETTINGS.PATH.POSTS)
       .send(newPost) // отправка данных
       .expect(HTTP_STATUSES.NOT_AUTHORIZED_401);
@@ -110,8 +113,9 @@ describe("tests for /posts", () => {
   });
 
   it("should create", async () => {
-    await setMongoDB(blogCollection, datasetBlogValid);
-    const res = await agent
+    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel, datasetBlogValid);
+    const res = await request
+      .agent(app)
       .set("Authorization", "Basic " + codedAuthorization)
       .post(SETTINGS.PATH.POSTS)
       .send(newPost) // отправка данных
@@ -129,7 +133,8 @@ describe("tests for /posts", () => {
       content: "About everything",
       blogId: blog1._id.toString(),
     };
-    const res = await agent
+    const res = await request
+      .agent(app)
       .set("Authorization", "Basic " + codedAuthorization)
       .post(SETTINGS.PATH.POSTS)
       .send(newWrongPost) // отправка данных
@@ -145,7 +150,8 @@ describe("tests for /posts", () => {
       content: post7.content,
       blogId: post7.blogId,
     };
-    const res = await agent
+    const res = await request
+      .agent(app)
       .set("Authorization", "Basic " + codedAuthorization)
       .post(SETTINGS.PATH.POSTS)
       .send(newWrongPost) // отправка данных
@@ -155,9 +161,10 @@ describe("tests for /posts", () => {
   });
 
   it("shouldn't find post", async () => {
-    await setMongoDB(postCollection, datasetPostValid);
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid);
 
-    const res = await agent
+    const res = await request
+      .agent(app)
       .get(SETTINGS.PATH.POSTS + "/1")
       .expect(HTTP_STATUSES.NOT_FOUND_404); // проверка на ошибку
 
@@ -165,16 +172,17 @@ describe("tests for /posts", () => {
   });
 
   it("should update post", async () => {
-    await setMongoDB(blogCollection, datasetBlogValid);
-    await setMongoDB(postCollection, datasetPostValid);
+    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel, datasetBlogValid);
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid);
 
-    const updatePost: Post = {
+    const updatePost = {
       ...datasetPostValid[0],
       title: "Stories",
       shortDescription: "Stories about my life",
       content: "about stories",
     };
-    await agent
+    await request
+      .agent(app)
       .set("Authorization", "Basic " + codedAuthorization)
       .put(SETTINGS.PATH.POSTS + "/" + updatePost._id)
       .send(updatePost) // отправка данных
@@ -182,9 +190,9 @@ describe("tests for /posts", () => {
   });
 
   it("shouldn't update post", async () => {
-    await setMongoDB(blogCollection, datasetBlogValid);
-    const updatePost: Post = {
-      _id: new ObjectId(),
+    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel, datasetBlogValid);
+    const updatePost = {
+      _id: new mongoose.Types.ObjectId(),
       title: "Stories",
       shortDescription: "Stories about my life",
       content: "about stories",
@@ -194,7 +202,8 @@ describe("tests for /posts", () => {
       update() {},
     };
 
-    await agent
+    await request
+      .agent(app)
       .set("Authorization", "Basic " + codedAuthorization)
       .put(SETTINGS.PATH.POSTS + "/" + updatePost._id)
       .send(updatePost) // отправка данных
@@ -202,9 +211,9 @@ describe("tests for /posts", () => {
   });
 
   it("shouldn't update post with wrong title", async () => {
-    await setMongoDB(blogCollection, datasetBlogValid);
-    await setMongoDB(postCollection, datasetPostValid);
-    const updatePost: Post = {
+    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel, datasetBlogValid);
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid);
+    const updatePost = {
       _id: post1._id,
       title: "Stories stories stories stories stories stories",
       shortDescription: "Stories about my life",
@@ -215,7 +224,8 @@ describe("tests for /posts", () => {
       update() {},
     };
 
-    await agent
+    await request
+      .agent(app)
       .set("Authorization", "Basic " + codedAuthorization)
       .put(SETTINGS.PATH.POSTS + "/" + updatePost._id)
       .send(updatePost) // отправка данных
@@ -223,38 +233,44 @@ describe("tests for /posts", () => {
   });
 
   it("should not delete post unauthorized", async () => {
-    await setMongoDB(postCollection, datasetPostValid);
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid);
 
-    await agent
+    await request
+      .agent(app)
       .set("Authorization", "")
       .delete(SETTINGS.PATH.POSTS + "/" + datasetPostValid[1]._id)
       .expect(HTTP_STATUSES.NOT_AUTHORIZED_401);
   });
 
   it("should delete existing post", async () => {
-    await setMongoDB(postCollection, datasetPostValid);
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid);
     const currentId = datasetPostValid[1]._id;
-    await agent
+    await request
+      .agent(app)
       .set("Authorization", "Basic " + codedAuthorization)
       .delete(SETTINGS.PATH.POSTS + "/" + currentId)
       .expect(HTTP_STATUSES.NO_CONTENT_204);
-    await agent
+    await request
+      .agent(app)
       .get(SETTINGS.PATH.POSTS + "/" + currentId)
       .expect(HTTP_STATUSES.NOT_FOUND_404);
   });
 
   it("shouldn't delete not-existing post", async () => {
-    await agent
+    await request
+      .agent(app)
       .set("Authorization", "Basic " + codedAuthorization)
       .delete(SETTINGS.PATH.POSTS + "/-1")
       .expect(HTTP_STATUSES.NOT_FOUND_404);
   });
 
   it("should delete all posts", async () => {
-    await setMongoDB(postCollection, datasetPostValid);
-    await agent
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid);
+    await request
+      .agent(app)
+      .set("Authorization", "Basic " + codedAuthorization)
       .delete(SETTINGS.PATH.POSTS)
       .expect(HTTP_STATUSES.NO_CONTENT_204);
-    console.log(await postCollection.find().toArray());
+    console.log(await PostModel.find().lean());
   });
 });

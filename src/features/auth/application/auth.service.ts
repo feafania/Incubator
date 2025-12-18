@@ -197,8 +197,9 @@ export class AuthService {
 
     if (existing) {
       // 3. Абнавіць issuedAt
+
       await this.sessionService.update({
-        ...existing,
+        deviceId: existing.deviceId,
         issuedAt: payload.issuedAt ?? truncateDateToSeconds(),
         deviceName,
         ip,
@@ -243,13 +244,16 @@ export class AuthService {
     if (existing) {
       existing.update({
         issuedAt: payload.issuedAt ?? truncateDateToSeconds(),
-        ip: ip,
+        ip,
         expiresAt: payload.expiresAt ?? new Date(),
       });
 
-      const { userId: sessionUserId, ...rest } = existing;
       const updateCommand: UpdateSessionCommand = {
-        ...rest,
+        deviceId: existing.deviceId,
+        deviceName,
+        ip,
+        issuedAt: payload.issuedAt ?? truncateDateToSeconds(),
+        expiresAt: payload.expiresAt ?? new Date(),
       };
 
       await this.sessionService.update(updateCommand);

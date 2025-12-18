@@ -1,12 +1,13 @@
 import { CommentListPaginatedOutput } from "../application/output/comment-list-paginated.output";
-import { ObjectId } from "mongodb";
 import { CommentListRequestPayload } from "../routes/request-payloads/comment-list-request.payload";
 import { CommentOutput } from "../application/output/comment.output";
-import { commentCollection } from "../../../db/mongo.db";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
 import { mapToCommentListPaginatedOutput } from "../application/mappers/map-to-comment-list-paginated-output.util";
 import { mapToCommentOutput } from "../application/mappers/map-to-comment-output.util";
 import { injectable } from "inversify";
+import mongoose from "mongoose";
+import { CommentModel } from "../domain/comment";
+import { mapToMongoSortDirection } from "../../../core/helpers/map-to-mongo-sort-direction.util";
 
 @injectable()
 export class CommentQueryRepository {
@@ -19,13 +20,12 @@ export class CommentQueryRepository {
     const filter: any = {};
 
     const [items, totalCount] = await Promise.all([
-      commentCollection
-        .find(filter)
-        .sort({ [sortBy]: sortDirection })
+      CommentModel.find(filter)
+        .sort({ [sortBy]: mapToMongoSortDirection(sortDirection) })
         .skip(skip)
         .limit(pageSize)
-        .toArray(),
-      commentCollection.countDocuments(filter),
+        .exec(),
+      CommentModel.countDocuments(filter),
     ]);
 
     return mapToCommentListPaginatedOutput(items, {
@@ -44,13 +44,12 @@ export class CommentQueryRepository {
     const skip = (pageNumber - 1) * pageSize;
 
     const [items, totalCount] = await Promise.all([
-      commentCollection
-        .find(filter)
-        .sort({ [sortBy]: sortDirection })
+      CommentModel.find(filter)
+        .sort({ [sortBy]: mapToMongoSortDirection(sortDirection) })
         .skip(skip)
         .limit(pageSize)
-        .toArray(),
-      commentCollection.countDocuments(filter),
+        .exec(),
+      CommentModel.countDocuments(filter),
     ]);
     return mapToCommentListPaginatedOutput(items, {
       pageNumber,
@@ -60,14 +59,11 @@ export class CommentQueryRepository {
   }
 
   async findByIdOrFail(id: string): Promise<CommentOutput> {
-    let objectId: ObjectId;
-
-    try {
-      objectId = new ObjectId(id);
-    } catch {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new RepositoryNotFoundError("Comment not exist");
     }
-    const userComment = await commentCollection.findOne({ _id: objectId });
+
+    const userComment = await CommentModel.findById(id);
 
     if (!userComment) {
       throw new RepositoryNotFoundError("Comment not exist");

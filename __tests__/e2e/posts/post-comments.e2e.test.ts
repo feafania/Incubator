@@ -1,5 +1,4 @@
 import { datasetPostValid, setMongoDB } from "../../utils/datasets";
-import { postCollection } from "../../../src/db/mongo.db";
 import { SETTINGS } from "../../../src/core/settings/settings";
 import { HTTP_STATUSES } from "../../../src/core/types/http-statuses";
 
@@ -9,6 +8,8 @@ import { generateBasicAuthToken } from "../../utils/generate-admin-auth-token";
 import { createUserAndLogin } from "../../utils/users/create-user-and-login";
 import { createTestApp, stopTestDb } from "../../create-test-app";
 import request from "supertest";
+import { ClassFieldsOnly } from "../../../src/core/types/fields-only";
+import { Post, PostModel } from "../../../src/features/posts/domain/posts";
 
 describe("tests for /posts/:id/comments", () => {
   const commentContent = { content: "This is a test comment" };
@@ -23,7 +24,7 @@ describe("tests for /posts/:id/comments", () => {
     const setup = await createTestApp();
     app = setup.app;
     mongoServer = setup.mongoServer;
-    await setMongoDB(postCollection, datasetPostValid);
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid);
     validPostId = datasetPostValid[0]._id!.toString();
     // console.log(await postCollection.find().toArray())
 

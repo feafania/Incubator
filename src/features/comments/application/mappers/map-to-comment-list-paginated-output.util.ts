@@ -1,10 +1,9 @@
-import { WithId } from "mongodb";
 import { CommentListPaginatedOutput } from "../output/comment-list-paginated.output";
 import { CommentOutput } from "../output/comment.output";
-import { CommentEntity } from "../../domain/comment";
+import { CommentDocument } from "../../domain/comment";
 
 export function mapToCommentListPaginatedOutput(
-  comments: WithId<CommentEntity>[],
+  comments: CommentDocument[],
   meta: { pageNumber: number; pageSize: number; totalCount: number },
 ): CommentListPaginatedOutput {
   return {

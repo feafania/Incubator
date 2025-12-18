@@ -1,6 +1,6 @@
 import { RateLimitService } from "../../../src/features/rate-limit/application/rate-limit.service";
 import { RateLimitRepository } from "../../../src/features/rate-limit/repositories/rate-limit.repository";
-import { RateLimit } from "../../../src/features/rate-limit/domain/rate-limit";
+import mongoose from "mongoose";
 
 describe("RateLimitService Unit Tests", () => {
   let service: RateLimitService;
@@ -31,9 +31,10 @@ describe("RateLimitService Unit Tests", () => {
     // mock.calls -гэта масіў усіх выклікаў мок-функцыі.
     // Кожны элемент — гэта масіў аргументаў аднаго выкліку.
     const arg = repository.add.mock.calls[0][0];
-    expect(arg).toBeInstanceOf(RateLimit);
+    expect(arg).toHaveProperty("_id");
     expect(arg.ip).toBe(command.ip);
     expect(arg.url).toBe(command.url);
+    expect(arg).toBeInstanceOf(mongoose.Model);
   });
 
   // ---------------------------------------------------------------------

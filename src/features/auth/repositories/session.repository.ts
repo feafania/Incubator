@@ -1,98 +1,62 @@
-import { ObjectId, WithId } from "mongodb";
-import { sessionCollection } from "../../../db/mongo.db";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
-import { SessionEntity } from "../domain/session";
+import { SessionDocument, SessionModel } from "../domain/session";
 import { injectable } from "inversify";
+import mongoose from "mongoose";
 
 @injectable()
 export class SessionRepository {
-  async findByIdOrFail(id: string): Promise<WithId<SessionEntity>> {
-    let objectId: ObjectId;
-
-    try {
-      objectId = new ObjectId(id);
-    } catch {
+  async findByIdOrFail(id: string): Promise<SessionDocument> {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new RepositoryNotFoundError("Session not exist");
     }
-    const res = await sessionCollection.findOne({ _id: objectId });
+    const res = await SessionModel.findById(id);
 
     if (!res) {
       throw new RepositoryNotFoundError("Session not exist");
     }
 
-    return SessionEntity.reconstitute(res);
+    return res;
   }
 
-  async findByDeviceId(deviceId: string): Promise<WithId<SessionEntity>> {
-    const res = await sessionCollection.findOne({ deviceId });
+  async findByDeviceId(deviceId: string): Promise<SessionDocument> {
+    const res = await SessionModel.findOne({ deviceId });
     if (!res) {
       throw new RepositoryNotFoundError("Session not exist");
     }
 
-    return SessionEntity.reconstitute(res);
+    return res;
   }
 
-  async findByUserId(userId: string): Promise<WithId<SessionEntity>[]> {
-    const items = await sessionCollection.find({ userId }).toArray();
-
-    return items.map((el) => SessionEntity.reconstitute(el));
+  async findByUserId(userId: string): Promise<SessionDocument[]> {
+    return SessionModel.find({ userId }).exec();
   }
 
   async findByDeviceIdAndIssuedAtOrFail(deviceId: string, issuedAt: Date) {
-    const session = await sessionCollection.findOne({ deviceId, issuedAt });
+    const session = await SessionModel.findOne({ deviceId, issuedAt });
     if (!session) throw new RepositoryNotFoundError("Session not exist");
-    return SessionEntity.reconstitute(session);
+    return session;
   }
 
   async findExistingSession(
     userId: string,
     deviceId: string,
-  ): Promise<WithId<SessionEntity> | null> {
-    const session = await sessionCollection.findOne({ deviceId, userId });
+  ): Promise<SessionDocument | null> {
+    const session = await SessionModel.findOne({ deviceId, userId });
     if (!session) return null;
-    return SessionEntity.reconstitute(session);
+    return session;
   }
 
-  async save(session: SessionEntity): Promise<SessionEntity> {
-    if (!session._id) {
-      const insertResult = await sessionCollection.insertOne(session);
-
-      session._id = insertResult.insertedId;
-
-      return session;
-    } else {
-      const { _id, ...dtoToUpdate } = session;
-
-      const updateResult = await sessionCollection.updateOne(
-        {
-          _id,
-        },
-        {
-          $set: {
-            ...dtoToUpdate,
-          },
-        },
-      );
-
-      if (updateResult.matchedCount < 1) {
-        throw new RepositoryNotFoundError("Session not exist");
-      }
-
-      return session;
-    }
+  async save(session: SessionDocument): Promise<SessionDocument> {
+    return session.save();
   }
 
   async delete(id: string): Promise<void> {
-    let objectId: ObjectId;
-
-    try {
-      objectId = new ObjectId(id);
-    } catch {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new RepositoryNotFoundError("Session not exist");
     }
 
-    const deleteResult = await sessionCollection.deleteOne({
-      _id: objectId,
+    const deleteResult = await SessionModel.deleteOne({
+      _id: new mongoose.Types.ObjectId(id),
     });
 
     if (deleteResult.deletedCount < 1) {
@@ -104,15 +68,15 @@ export class SessionRepository {
   }
 
   async deleteMany(): Promise<void> {
-    await sessionCollection.deleteMany({});
+    await SessionModel.deleteMany({});
   }
 
   async deleteByUserIdAndDeviceId(userId: string, deviceId: string) {
-    return sessionCollection.deleteMany({ userId, deviceId });
+    return SessionModel.deleteMany({ userId, deviceId });
   }
 
   async deleteAllByUserId(userId: string, excludeDevices: string[]) {
-    return sessionCollection.deleteMany({
+    return SessionModel.deleteMany({
       userId,
       deviceId: { $nin: excludeDevices },
     });

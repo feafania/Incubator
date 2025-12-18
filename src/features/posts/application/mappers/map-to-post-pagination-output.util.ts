@@ -1,10 +1,9 @@
-import { WithId } from "mongodb";
-import { Post } from "../../domain/posts";
+import { PostDocument } from "../../domain/posts";
 import { PostListPaginatedOutput } from "../output/post-list-paginated.output";
 import PostOutput from "../output/post.output";
 
 export function mapToPostListPaginatedOutput(
-  posts: (WithId<Post> & { blogName: string })[],
+  posts: (PostDocument & { blogName: string })[],
   meta: { pageNumber: number; pageSize: number; totalCount: number },
 ): PostListPaginatedOutput {
   return {

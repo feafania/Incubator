@@ -1,69 +1,35 @@
-import { ObjectId, WithId } from "mongodb";
-import { commentCollection } from "../../../db/mongo.db";
 import { RepositoryNotFoundError } from "../../../core/errors/repository-not-found.error";
-import { CommentEntity } from "../domain/comment";
+import { CommentDocument, CommentModel } from "../domain/comment";
 import { injectable } from "inversify";
+import mongoose from "mongoose";
 
 @injectable()
 export class CommentsRepository {
-  async findByIdOrFail(id: string): Promise<WithId<CommentEntity>> {
-    let objectId: ObjectId;
-
-    try {
-      objectId = new ObjectId(id);
-    } catch {
-      throw new RepositoryNotFoundError("Comment not exist");
+  async findByIdOrFail(id: string): Promise<CommentDocument> {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new RepositoryNotFoundError("Blog not exist");
     }
 
-    const res = await commentCollection.findOne({ _id: objectId });
+    const res = await CommentModel.findById(id);
 
     if (!res) {
       throw new RepositoryNotFoundError("Comment not exist");
     }
 
-    return CommentEntity.reconstitute(res);
+    return res;
   }
 
-  async save(comment: CommentEntity): Promise<CommentEntity> {
-    if (!comment._id) {
-      const insertResult = await commentCollection.insertOne(comment);
-
-      comment._id = insertResult.insertedId;
-
-      return comment;
-    } else {
-      const { _id, ...dtoToUpdate } = comment;
-
-      const updateResult = await commentCollection.updateOne(
-        {
-          _id,
-        },
-        {
-          $set: {
-            ...dtoToUpdate,
-          },
-        },
-      );
-
-      if (updateResult.matchedCount < 1) {
-        throw new RepositoryNotFoundError("Comment not exist");
-      }
-
-      return comment;
-    }
+  async save(comment: CommentDocument): Promise<CommentDocument> {
+    return comment.save();
   }
 
   async delete(id: string): Promise<void> {
-    let objectId: ObjectId;
-
-    try {
-      objectId = new ObjectId(id);
-    } catch {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new RepositoryNotFoundError("Comment not exist");
     }
 
-    const deleteResult = await commentCollection.deleteOne({
-      _id: objectId,
+    const deleteResult = await CommentModel.deleteOne({
+      _id: new mongoose.Types.ObjectId(id),
     });
 
     if (deleteResult.deletedCount < 1) {
@@ -75,6 +41,6 @@ export class CommentsRepository {
   }
 
   async deleteMany(): Promise<void> {
-    await commentCollection.deleteMany({});
+    await CommentModel.deleteMany({});
   }
 }

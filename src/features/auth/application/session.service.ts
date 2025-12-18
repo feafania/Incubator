@@ -3,7 +3,7 @@ import {
   CreateSessionCommand,
   UpdateSessionCommand,
 } from "./command-handlers/session-commands";
-import { SessionEntity } from "../domain/session";
+import { SessionDocument, SessionEntity } from "../domain/session";
 import { inject, injectable } from "inversify";
 
 @injectable()
@@ -24,6 +24,7 @@ export class SessionService {
     const newCommand = { issuedAt, ip, expiresAt };
 
     const session = await this.sessionRepository.findByDeviceId(deviceId);
+    if (!session) return;
 
     session.update(newCommand);
     session.updateDeviceInfo({ deviceName });
@@ -57,7 +58,7 @@ export class SessionService {
   async findExistingSession(
     userId: string,
     deviceId: string,
-  ): Promise<SessionEntity | null> {
+  ): Promise<SessionDocument | null> {
     const session = await this.sessionRepository.findExistingSession(
       userId,
       deviceId,

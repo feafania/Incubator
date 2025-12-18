@@ -1,9 +1,8 @@
-import { WithId } from "mongodb";
 import PostOutput from "../output/post.output";
-import { Post } from "../../domain/posts";
+import { PostDocument } from "../../domain/posts";
 
 export function mapToPostOutput(
-  post: WithId<Post> & { blogName: string },
+  post: PostDocument & { blogName: string },
 ): PostOutput {
   return {
     id: post._id.toString(),
