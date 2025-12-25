@@ -7,11 +7,15 @@ import {
 } from "./command-handlers/comment-commands";
 import { ForbiddenError } from "../../../core/errors/forbidden.error";
 import { inject, injectable } from "inversify";
+import { LikesService } from "../../likes/application/likes.service";
+import { SetLikeCommand } from "../../likes/application/command-handlers/like-commands";
+import { LikeStatus } from "../../likes/domain/like-status-type";
 
 @injectable()
 export class CommentsService {
   constructor(
     @inject(CommentsRepository) private commentsRepository: CommentsRepository,
+    @inject(LikesService) private likesService: LikesService,
   ) {}
 
   async create(command: CreateCommentCommand): Promise<string> {
@@ -56,5 +60,68 @@ export class CommentsService {
 
   async deleteMany(): Promise<void> {
     await this.commentsRepository.deleteMany();
+  }
+
+  async setLikeStatus(command: SetLikeCommand): Promise<void> {
+    const { status, userId, commentId } = command;
+    await this.commentsRepository.findByIdOrFail(commentId);
+    const like = await this.likesService.findByAuthorAndParent(
+      userId,
+      commentId,
+    );
+
+    const oldStatus = like ? like.status : LikeStatus.NONE;
+
+    if (like) {
+      await this.likesService.update({ status, id: like._id.toString() });
+    } else {
+      await this.likesService.create({
+        status,
+        authorId: userId,
+        parentId: commentId,
+      });
+    }
+    await this.setLikeCount(commentId, status, oldStatus);
+  }
+
+  async setLikeCount(
+    id: string,
+    status: LikeStatus,
+    oldStatus: LikeStatus,
+  ): Promise<void> {
+    const userComment = await this.commentsRepository.findByIdOrFail(id);
+    if (oldStatus === status) return;
+
+    const likesInfo = userComment.likesInfo ?? {
+      likesCount: 0,
+      dislikesCount: 0,
+    };
+
+    switch (oldStatus) {
+      case LikeStatus.LIKE:
+        likesInfo.likesCount--;
+        break;
+      case LikeStatus.DISLIKE:
+        likesInfo.dislikesCount--;
+        break;
+    }
+
+    switch (status) {
+      case LikeStatus.LIKE:
+        likesInfo.likesCount++;
+        break;
+      case LikeStatus.DISLIKE:
+        likesInfo.dislikesCount++;
+        break;
+    }
+
+    likesInfo.likesCount = Math.max(0, likesInfo.likesCount);
+    likesInfo.dislikesCount = Math.max(0, likesInfo.dislikesCount);
+
+    userComment.update({
+      content: userComment.content,
+      likesInfo,
+    });
+    await userComment.save();
   }
 }

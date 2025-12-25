@@ -53,6 +53,7 @@ export const SETTINGS = {
     REVOKED_TOKENS: "revokedTokens",
     RATE_LIMIT: "rateLimit",
     SESSIONS: "sessions",
+    LIKES: "likes",
   },
   JWT_ACCESS_SECRET: jwtAccessSecret,
   JWT_ACCESS_EXPIRY_PERIOD: jwtAccessExpiryPeriod,

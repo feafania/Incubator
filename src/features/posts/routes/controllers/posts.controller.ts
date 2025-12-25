@@ -128,6 +128,7 @@ export class PostsController {
         await this.commentQueryService.findCommentsByPost(
           queryInput,
           foundPost._id.toString(),
+          req.userId ?? undefined,
         );
       res.send(commentsListOutput); //200 па змоўчаньні і ў json фармаце для аб'екта
     } catch (e: unknown) {

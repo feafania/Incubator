@@ -12,18 +12,24 @@ export class CommentQueryService {
   ) {}
   async findMany(
     queryDto: CommentListRequestPayload,
+    userId?: string,
   ): Promise<CommentListPaginatedOutput> {
-    return this.commentQueryRepository.findMany(queryDto);
+    return this.commentQueryRepository.findMany(queryDto, userId);
   }
 
   async findCommentsByPost(
     queryDto: CommentListRequestPayload,
     postId: string,
+    userId?: string,
   ): Promise<CommentListPaginatedOutput> {
-    return this.commentQueryRepository.findCommentsByPost(queryDto, postId);
+    return this.commentQueryRepository.findCommentsByPost(
+      queryDto,
+      postId,
+      userId,
+    );
   }
 
-  async findByIdOrFail(id: string): Promise<CommentOutput> {
-    return this.commentQueryRepository.findByIdOrFail(id);
+  async findByIdOrFail(id: string, userId?: string): Promise<CommentOutput> {
+    return this.commentQueryRepository.findByIdOrFail(id, userId);
   }
 }

@@ -4,6 +4,8 @@ import { UpdateCommentDomainDto } from "./update-comment-domain.dto";
 import { ClassMethodsOnly } from "../../../core/types/methods-only";
 import mongoose, { HydratedDocument, model, Model } from "mongoose";
 import { SETTINGS } from "../../../core/settings/settings";
+import { LikeInfoDomainDto } from "../../likes/domain/like-info-domain.dto";
+import { LikeStatus } from "../../likes/domain/like-status-type";
 
 type CommentType = ClassFieldsOnly<CommentEntity>;
 
@@ -14,11 +16,25 @@ type CommentStatics = typeof CommentEntity;
 type CommentModelType = Model<CommentType, {}, CommentMethods> & CommentStatics;
 
 export type CommentDocument = HydratedDocument<CommentType, CommentMethods>;
+export type CommentWithStatus = ClassFieldsOnly<CommentEntity> & {
+  _id: mongoose.Types.ObjectId;
+  likesInfo: {
+    myStatus: LikeStatus;
+  };
+};
 
 const CommentatorInfoSchema = new mongoose.Schema(
   {
     userId: { type: String, required: true },
     userLogin: { type: String },
+  },
+  { _id: false, timestamps: false },
+);
+
+const LikesInfoSchema = new mongoose.Schema(
+  {
+    likesCount: { type: Number },
+    dislikesCount: { type: Number },
   },
   { _id: false, timestamps: false },
 );
@@ -31,6 +47,7 @@ const commentSchema = new mongoose.Schema<
   content: { type: String, required: true },
   postId: { type: String, required: true },
   commentatorInfo: { type: CommentatorInfoSchema },
+  likesInfo: LikesInfoSchema,
   createdAt: {
     type: Date,
     default: Date.now,
@@ -49,19 +66,32 @@ export class CommentEntity {
     userId: string;
     userLogin: string;
   };
+  declare likesInfo: LikeInfoDomainDto;
   declare createdAt: Date;
   declare updatedAt: Date;
 
   static create(dto: CommentDomainDto) {
-    return new CommentModel({
+    const comment = new CommentModel({
       content: dto.content,
       postId: dto.postId,
       commentatorInfo: dto.commentatorInfo,
     });
+    if (dto.likesInfo) {
+      comment.likesInfo = dto.likesInfo;
+    } else {
+      comment.likesInfo = {
+        likesCount: 0,
+        dislikesCount: 0,
+      };
+    }
+    return comment;
   }
 
   update(dto: UpdateCommentDomainDto) {
     this.content = dto.content;
+    if (dto.likesInfo) {
+      this.likesInfo = dto.likesInfo;
+    }
     this.updatedAt = new Date();
   }
 }

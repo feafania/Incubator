@@ -14,6 +14,7 @@ import { PostSortField } from "./request-payloads/post-sort-field";
 import { idValidation } from "../../../core/middlewares/validation/params-id.validation-middleware";
 import { container } from "../../../composition-root";
 import { PostsController } from "./controllers/posts.controller";
+import { accessTokenOptionalMiddleware } from "../../../auth/middlewares/access-token-optional.middleware";
 
 export const postsRouter = Router();
 
@@ -61,10 +62,13 @@ postsRouter.delete(
 
 postsRouter.get(
   `/:id${COMMENTS_PATH}`,
+  accessTokenOptionalMiddleware,
   idValidation,
   paginationAndSortingValidation(Object.values(CommentSortField)),
   inputValidationResultMiddleware,
-  postsController.getPostCommentListHandler.bind(postsController),
+  postsController.getPostCommentListHandler.bind(
+    postsController,
+  ) as unknown as RequestHandler,
 );
 
 postsRouter.post(

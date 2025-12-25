@@ -19,3 +19,4 @@ export const PASSWORD_PATH = {
   newPassword: "/new-password",
   passwordRecovery: "/password-recovery",
 };
+export const LIKE_STATUS_PATH = "/like-status";

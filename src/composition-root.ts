@@ -33,6 +33,8 @@ import { CommentsController } from "./features/comments/routes/controllers/comme
 import { SecurityController } from "./features/security/routes/controllers/security.controller";
 import { UsersController } from "./features/users/routes/controllers/users.controller";
 import { AuthController } from "./features/auth/routes/controllers/auth.controller";
+import { LikesRepository } from "./features/likes/repositories/likes.repository";
+import { LikesService } from "./features/likes/application/likes.service";
 
 export const container = new Container();
 
@@ -76,6 +78,9 @@ container.bind(CommentsRepository).toSelf();
 
 container.bind(CommentQueryService).toSelf();
 container.bind(CommentsService).toSelf();
+
+container.bind(LikesService).toSelf();
+container.bind(LikesRepository).toSelf();
 
 container.bind(PostsController).toSelf();
 container.bind(BlogsController).toSelf();
