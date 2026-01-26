@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { accessTokenGuardMiddleware } from "../../../auth/middlewares/access-token-guard.middleware";
 import { idValidation } from "../../../core/middlewares/validation/params-id.validation-middleware";
-import { inputValidationResultMiddleware } from "../../../core/middlewares/validation/input-validtion-result.middleware";
+import { inputValidationResultMiddleware } from "../../../core/middlewares/validation/input-validation-result.middleware";
 import {
-  setLikeStatusRequestPayloadValidation,
+  setCommentLikeStatusRequestPayloadValidation,
   updateCommentRequestPayloadValidation,
 } from "./comment-request.payload.validation-middlewares";
 import { container } from "../../../composition-root";
@@ -46,7 +46,7 @@ commentsRouter
     `/:id${LIKE_STATUS_PATH}`,
     accessTokenGuardMiddleware,
     idValidation,
-    setLikeStatusRequestPayloadValidation,
+    setCommentLikeStatusRequestPayloadValidation,
     inputValidationResultMiddleware,
     commentsController.setLikeStatusHandler.bind(commentsController),
   );

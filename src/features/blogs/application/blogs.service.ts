@@ -6,12 +6,15 @@ import {
   UpdateBlogCommand,
 } from "./command-handlers/blog-commands";
 import { inject, injectable } from "inversify";
+import { PostsService } from "../../posts/application/posts.service";
 
 @injectable()
 export class BlogsService {
   constructor(
     @inject(BlogsRepository)
     private blogsRepository: BlogsRepository,
+    @inject(PostsService)
+    private postsService: PostsService,
   ) {}
 
   async findByIdOrFail(id: string): Promise<WithId<Blog>> {
@@ -27,7 +30,8 @@ export class BlogsService {
   }
 
   async delete(id: string): Promise<void> {
-    this.blogsRepository.delete(id);
+    await this.blogsRepository.delete(id);
+    await this.postsService.deleteByBlogId(id);
   }
 
   async create(command: CreateBlogCommand): Promise<string> {

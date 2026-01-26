@@ -1,9 +1,9 @@
-import { PostDocument } from "../../domain/posts";
+import { PostForOutput } from "../../domain/posts";
 import { PostListPaginatedOutput } from "../output/post-list-paginated.output";
-import PostOutput from "../output/post.output";
+import { mapToPostOutput } from "./map-to-post-output.util";
 
 export function mapToPostListPaginatedOutput(
-  posts: (PostDocument & { blogName: string })[],
+  posts: PostForOutput[],
   meta: { pageNumber: number; pageSize: number; totalCount: number },
 ): PostListPaginatedOutput {
   return {
@@ -11,16 +11,6 @@ export function mapToPostListPaginatedOutput(
     pageSize: meta.pageSize,
     pagesCount: Math.ceil(meta.totalCount / meta.pageSize),
     totalCount: meta.totalCount,
-    items: posts.map(
-      (post): PostOutput => ({
-        id: post._id.toString(),
-        title: post.title,
-        shortDescription: post.shortDescription,
-        content: post.content,
-        blogId: post.blogId.toString() ?? "",
-        blogName: post.blogName ?? "",
-        createdAt: post.createdAt.toISOString(),
-      }),
-    ),
+    items: posts.map((post) => mapToPostOutput(post)),
   };
 }

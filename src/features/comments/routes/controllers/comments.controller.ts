@@ -72,7 +72,7 @@ export class CommentsController {
     res: Response,
   ) {
     try {
-      const commentId = req.params.id;
+      const entityId = req.params.id;
       const userId = req.userId;
 
       if (!userId) {
@@ -82,7 +82,7 @@ export class CommentsController {
 
       await this.commentsService.setLikeStatus({
         status: req.body.likeStatus as LikeStatus,
-        commentId,
+        entityId,
         userId,
       });
 

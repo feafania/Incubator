@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { inputValidationResultMiddleware } from "../../../core/middlewares/validation/input-validtion-result.middleware";
+import { inputValidationResultMiddleware } from "../../../core/middlewares/validation/input-validation-result.middleware";
 import {
   loginUserPayloadValidation,
   newPasswordRequestPayloadValidation,

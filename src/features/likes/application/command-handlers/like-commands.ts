@@ -6,6 +6,6 @@ export type UpdateLikeCommand = UpdateLikeDomainDto & {
   id: string;
 };
 export type SetLikeCommand = UpdateLikeDomainDto & {
-  commentId: string;
+  entityId: string;
   userId: string;
 };

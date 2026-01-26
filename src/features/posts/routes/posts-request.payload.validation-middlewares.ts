@@ -1,5 +1,8 @@
 import { body } from "express-validator";
-import { commentContentValidation } from "../../comments/routes/comment-request.payload.validation-middlewares";
+import {
+  commentContentValidation,
+  likeStatusValidation,
+} from "../../comments/routes/comment-request.payload.validation-middlewares";
 import { idValidation } from "../../../core/middlewares/validation/params-id.validation-middleware";
 import { container } from "../../../composition-root";
 import { BlogsService } from "../../blogs/application/blogs.service";
@@ -53,3 +56,4 @@ export const postCommentRequestPayloadValidation = [
   idValidation,
   commentContentValidation,
 ];
+export const setPostLikeStatusRequestPayloadValidation = [likeStatusValidation];

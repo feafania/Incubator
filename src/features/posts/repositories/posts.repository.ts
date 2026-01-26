@@ -35,6 +35,20 @@ export class PostsRepository {
     await PostModel.deleteMany({});
   }
 
+  async deleteByBlogId(blogId: string): Promise<string[]> {
+    const posts = await PostModel.find({ blogId }, { _id: 1 }).lean();
+
+    const ids = posts.map((p) => p._id.toString());
+
+    if (ids.length === 0) {
+      return [];
+    }
+
+    await PostModel.deleteMany({ _id: { $in: ids } });
+
+    return ids;
+  }
+
   async delete(id: string): Promise<void> {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new RepositoryNotFoundError("Post not exist");

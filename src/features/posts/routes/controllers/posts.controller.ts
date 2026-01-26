@@ -14,6 +14,8 @@ import UpdatePostRequestPayload from "../request-payloads/update-post-request.pa
 import { AuthQueryService } from "../../../auth/application/auth.query.service";
 import { CommentsService } from "../../../comments/application/comments.service";
 import { CommentQueryService } from "../../../comments/application/comment.query.service";
+import { SetLikeRequestPayload } from "../../../comments/routes/request-payloads/set-like-request.payload";
+import { LikeStatus } from "../../../likes/domain/like-status-type";
 
 @injectable()
 export class PostsController {
@@ -109,6 +111,7 @@ export class PostsController {
     try {
       const foundPost = await this.postQueryService.findByIdOrFail(
         req.params.id,
+        req.userId ?? undefined,
       );
       res.status(HTTP_STATUSES.OK_200).json(foundPost);
     } catch (e: unknown) {
@@ -144,7 +147,11 @@ export class PostsController {
       const queryInput = setDefaultSortAndPaginationIfNotExist(
         req.query,
       ) as PostListRequestPayload;
-      const postsListOutput = await this.postQueryService.findMany(queryInput);
+      const postsListOutput = await this.postQueryService.findMany(
+        queryInput,
+        undefined,
+        req.userId ?? undefined,
+      );
       res.send(postsListOutput);
     } catch (e: unknown) {
       errorsHandler(e, res);
@@ -167,6 +174,31 @@ export class PostsController {
 
       res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
       return;
+    } catch (e: unknown) {
+      errorsHandler(e, res);
+    }
+  }
+
+  async setLikeStatusHandler(
+    req: Request<{ id: string }, {}, SetLikeRequestPayload>,
+    res: Response,
+  ) {
+    try {
+      const postId = req.params.id;
+      const userId = req.userId;
+
+      if (!userId) {
+        res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
+        return;
+      }
+
+      await this.postsService.setLikeStatus({
+        status: req.body.likeStatus as LikeStatus,
+        entityId: postId,
+        userId,
+      });
+
+      res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
     } catch (e: unknown) {
       errorsHandler(e, res);
     }

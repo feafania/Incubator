@@ -128,6 +128,7 @@ export class BlogsController {
       const postsListOutput = await this.postQueryService.findMany(
         queryInput,
         foundBlog._id.toString(),
+        req.userId ?? undefined,
       );
       res.send(postsListOutput);
     } catch (e: unknown) {

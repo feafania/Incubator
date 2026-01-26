@@ -12,10 +12,8 @@ import CreatePostInputModel from "../../../src/features/posts/routes/request-pay
 import { HTTP_STATUSES } from "../../../src/core/types/http-statuses";
 import {
   Post,
-  PostDocument,
   PostModel,
 } from "../../../src/features/posts/domain/posts";
-import { mapToPostOutput } from "../../../src/features/posts/application/mappers/map-to-post-output.util";
 import { Express } from "express";
 import { createTestApp } from "../../create-test-app";
 import { ClassFieldsOnly } from "../../../src/core/types/fields-only";
@@ -23,7 +21,7 @@ import { clearDb } from "../../utils/clear-db";
 import request from "supertest";
 import { Blog, BlogModel } from "../../../src/features/blogs/domain/blogs";
 import mongoose from "mongoose";
-import PostOutput from "../../../src/features/posts/application/output/post.output";
+import { testMapToPostOutput } from "../../utils/posts/map-to-post-output";
 
 // // работа с ид
 // new ObjectId(req.params.id)
@@ -84,7 +82,7 @@ describe("tests for /posts", () => {
       [...datasetPostValid]
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .map((b) => {
-          return mapToPostOutput(b as PostDocument & { blogName: string });
+          return testMapToPostOutput(b);
         }),
     );
     expect(res.body.items).toEqual(sortedExpected);

@@ -1,3 +1,6 @@
+import { LikesInfoOutput } from "../../../likes/application/output/likes-info.output";
+import { LikesDetailsOutput } from "../../../likes/application/output/like-details.output";
+
 type PostOutput = {
   /**
    * id of the post
@@ -32,6 +35,16 @@ type PostOutput = {
    * pattern: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/
    */
   createdAt: string;
+  /**
+   * Extended likes information
+   */
+  extendedLikesInfo?: LikesInfoOutput & {
+    /**
+     * nullable: true
+     * Last 3 likes (status "Like")
+     */
+    newestLikes?: LikesDetailsOutput[];
+  };
 };
 
 export default PostOutput;

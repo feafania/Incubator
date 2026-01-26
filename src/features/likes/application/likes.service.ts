@@ -61,4 +61,8 @@ export class LikesService {
   async deleteMany(idForDelete: string[] = []): Promise<void> {
     await this.likesRepository.deleteMany(idForDelete);
   }
+
+  async deleteByParentId(id: string): Promise<void> {
+    await this.likesRepository.deleteByParentId(id);
+  }
 }

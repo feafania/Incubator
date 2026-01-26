@@ -43,4 +43,18 @@ export class CommentsRepository {
   async deleteMany(): Promise<void> {
     await CommentModel.deleteMany({});
   }
+
+  async deleteByPostId(postId: string): Promise<string[]> {
+    const comments = await CommentModel.find({ postId }, { _id: 1 }).lean();
+
+    const ids = comments.map((c) => c._id.toString());
+
+    if (ids.length === 0) {
+      return [];
+    }
+
+    await CommentModel.deleteMany({ _id: { $in: ids } });
+
+    return ids;
+  }
 }

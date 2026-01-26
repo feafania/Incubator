@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { DEVICES_PATH } from "../../../core/paths/paths";
-import { inputValidationResultMiddleware } from "../../../core/middlewares/validation/input-validtion-result.middleware";
+import { inputValidationResultMiddleware } from "../../../core/middlewares/validation/input-validation-result.middleware";
 import { idValidation } from "../../../core/middlewares/validation/params-id.validation-middleware";
 import { refreshTokenGuardMiddleware } from "../../../auth/middlewares/refresh-token-guard.middleware";
 import { container } from "../../../composition-root";

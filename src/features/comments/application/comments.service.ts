@@ -62,9 +62,18 @@ export class CommentsService {
     await this.commentsRepository.deleteMany();
   }
 
+  async deleteByPostId(id: string): Promise<void> {
+    const deletedComments = await this.commentsRepository.deleteByPostId(id);
+    await Promise.all(
+      deletedComments.map(async (commentId) => {
+        await this.likesService.deleteByParentId(commentId);
+      }),
+    );
+  }
+
   async setLikeStatus(command: SetLikeCommand): Promise<void> {
-    const { status, userId, commentId } = command;
-    await this.commentsRepository.findByIdOrFail(commentId);
+    const { status, userId, entityId: commentId } = command;
+    const userComment = await this.commentsRepository.findByIdOrFail(commentId);
     const like = await this.likesService.findByAuthorAndParent(
       userId,
       commentId,
@@ -81,47 +90,7 @@ export class CommentsService {
         parentId: commentId,
       });
     }
-    await this.setLikeCount(commentId, status, oldStatus);
-  }
-
-  async setLikeCount(
-    id: string,
-    status: LikeStatus,
-    oldStatus: LikeStatus,
-  ): Promise<void> {
-    const userComment = await this.commentsRepository.findByIdOrFail(id);
-    if (oldStatus === status) return;
-
-    const likesInfo = userComment.likesInfo ?? {
-      likesCount: 0,
-      dislikesCount: 0,
-    };
-
-    switch (oldStatus) {
-      case LikeStatus.LIKE:
-        likesInfo.likesCount--;
-        break;
-      case LikeStatus.DISLIKE:
-        likesInfo.dislikesCount--;
-        break;
-    }
-
-    switch (status) {
-      case LikeStatus.LIKE:
-        likesInfo.likesCount++;
-        break;
-      case LikeStatus.DISLIKE:
-        likesInfo.dislikesCount++;
-        break;
-    }
-
-    likesInfo.likesCount = Math.max(0, likesInfo.likesCount);
-    likesInfo.dislikesCount = Math.max(0, likesInfo.dislikesCount);
-
-    userComment.update({
-      content: userComment.content,
-      likesInfo,
-    });
-    await userComment.save();
+    userComment.setLikeCount(status, oldStatus);
+    await this.commentsRepository.save(userComment);
   }
 }

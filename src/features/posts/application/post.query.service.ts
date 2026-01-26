@@ -13,11 +13,12 @@ export class PostQueryService {
   async findMany(
     queryDto: PostListRequestPayload,
     blogId?: string,
+    userId?: string,
   ): Promise<PostListPaginatedOutput> {
-    return this.postQueryRepository.findMany(queryDto, blogId);
+    return this.postQueryRepository.findMany(queryDto, blogId, userId);
   }
 
-  async findByIdOrFail(id: string): Promise<PostOutput> {
-    return this.postQueryRepository.findByIdOrFail(id);
+  async findByIdOrFail(id: string, userId?: string): Promise<PostOutput> {
+    return this.postQueryRepository.findByIdOrFail(id, userId);
   }
 }

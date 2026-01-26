@@ -60,4 +60,8 @@ export class LikesRepository {
     }
     await LikeModel.deleteMany(filter);
   }
+
+  async deleteByParentId(id: string): Promise<void> {
+    await LikeModel.deleteMany({ parentId: id });
+  }
 }

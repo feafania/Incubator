@@ -6,6 +6,7 @@ import mongoose, { HydratedDocument, model, Model } from "mongoose";
 import { SETTINGS } from "../../../core/settings/settings";
 import { LikeInfoDomainDto } from "../../likes/domain/like-info-domain.dto";
 import { LikeStatus } from "../../likes/domain/like-status-type";
+import { Like } from "../../likes/domain/like";
 
 type CommentType = ClassFieldsOnly<CommentEntity>;
 
@@ -93,6 +94,22 @@ export class CommentEntity {
       this.likesInfo = dto.likesInfo;
     }
     this.updatedAt = new Date();
+  }
+
+  setLikeCount(status: LikeStatus, oldStatus: LikeStatus) {
+    if (oldStatus === status) return;
+
+    const likesInfo = this.likesInfo ?? {
+      likesCount: 0,
+      dislikesCount: 0,
+    };
+
+    Like.setLikeCount<LikeInfoDomainDto>(likesInfo, status, oldStatus);
+
+    this.update({
+      content: this.content,
+      likesInfo,
+    });
   }
 }
 

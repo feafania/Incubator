@@ -19,4 +19,6 @@ export const likeStatusValidation = body("likeStatus")
   .customSanitizer((value) => value as LikeStatus);
 
 export const updateCommentRequestPayloadValidation = [commentContentValidation];
-export const setLikeStatusRequestPayloadValidation = [likeStatusValidation];
+export const setCommentLikeStatusRequestPayloadValidation = [
+  likeStatusValidation,
+];

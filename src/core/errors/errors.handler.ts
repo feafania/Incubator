@@ -86,7 +86,14 @@ export function errorsHandler(error: unknown, res: Response): void {
     return;
   }
 
-  res.status(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500);
+  res.status(HTTP_STATUSES.INTERNAL_SERVER_ERROR_500).send(
+    createErrorMessages([
+      {
+        status: HTTP_STATUSES.INTERNAL_SERVER_ERROR_500,
+        detail: "Internal server error",
+      },
+    ]),
+  );
   return;
 }
 

@@ -13,6 +13,7 @@ import { idValidation } from "../../../core/middlewares/validation/params-id.val
 import { BlogSortField } from "./request-payloads/blog-sort-field";
 import { container } from "../../../composition-root";
 import { BlogsController } from "./controllers/blogs.controller";
+import { accessTokenOptionalMiddleware } from "../../../auth/middlewares/access-token-optional.middleware";
 
 export const blogsRouter = Router();
 
@@ -59,6 +60,7 @@ blogsRouter.delete(
 
 blogsRouter.get(
   `/:id${POSTS_PATH}`,
+  accessTokenOptionalMiddleware,
   paginationAndSortingValidation(Object.values(PostSortField)),
   idValidation,
   inputCheckErrorsMiddleware,

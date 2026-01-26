@@ -5,6 +5,8 @@ import mongoose, { HydratedDocument, model, Model } from "mongoose";
 import { SETTINGS } from "../../../core/settings/settings";
 import { LikeStatus } from "./like-status-type";
 import { UpdateLikeDomainDto } from "./update-like-domain.dto";
+import { LikeInfoDomainDto } from "./like-info-domain.dto";
+import { ExtendedLikeInfoDomainDto } from "./extended-like-info-domain.dto";
 
 type LikeType = ClassFieldsOnly<Like>;
 
@@ -54,6 +56,36 @@ export class Like {
   update(dto: UpdateLikeDomainDto) {
     this.status = dto.status;
     this.updatedAt = new Date();
+  }
+
+  static setLikeCount<
+    T extends {
+      likesCount: number;
+      dislikesCount: number;
+    },
+  >(entity: T, status: LikeStatus, oldStatus: LikeStatus) {
+    if (oldStatus === status) return;
+
+    switch (oldStatus) {
+      case LikeStatus.LIKE:
+        entity.likesCount--;
+        break;
+      case LikeStatus.DISLIKE:
+        entity.dislikesCount--;
+        break;
+    }
+
+    switch (status) {
+      case LikeStatus.LIKE:
+        entity.likesCount++;
+        break;
+      case LikeStatus.DISLIKE:
+        entity.dislikesCount++;
+        break;
+    }
+
+    entity.likesCount = Math.max(0, entity.likesCount);
+    entity.dislikesCount = Math.max(0, entity.dislikesCount);
   }
 }
 

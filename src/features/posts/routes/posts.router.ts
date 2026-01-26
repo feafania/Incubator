@@ -2,12 +2,13 @@ import { RequestHandler, Router } from "express";
 import {
   postCommentRequestPayloadValidation,
   postRequestPayloadValidation,
+  setPostLikeStatusRequestPayloadValidation,
 } from "./posts-request.payload.validation-middlewares";
 import { paginationAndSortingValidation } from "../../../core/middlewares/validation/query-pagination-sorting.validation-middleware";
 import { inputCheckErrorsMiddleware } from "../../../core/middlewares/validation/error.middleware";
 import { adminGuardMiddleware } from "../../../auth/middlewares/admin-guard.middleware";
-import { COMMENTS_PATH } from "../../../core/paths/paths";
-import { inputValidationResultMiddleware } from "../../../core/middlewares/validation/input-validtion-result.middleware";
+import { COMMENTS_PATH, LIKE_STATUS_PATH } from "../../../core/paths/paths";
+import { inputValidationResultMiddleware } from "../../../core/middlewares/validation/input-validation-result.middleware";
 import { accessTokenGuardMiddleware } from "../../../auth/middlewares/access-token-guard.middleware";
 import { CommentSortField } from "../../comments/routes/request-payloads/comment-sort-field";
 import { PostSortField } from "./request-payloads/post-sort-field";
@@ -22,6 +23,7 @@ const postsController = container.get<PostsController>(PostsController);
 
 postsRouter.get(
   "/",
+  accessTokenOptionalMiddleware,
   paginationAndSortingValidation(Object.values(PostSortField)),
   inputCheckErrorsMiddleware,
   postsController.getPostListHandler.bind(
@@ -37,6 +39,7 @@ postsRouter.post(
 );
 postsRouter.get(
   "/:id",
+  accessTokenOptionalMiddleware,
   idValidation,
   postsController.findPostHandler.bind(postsController),
 );
@@ -78,4 +81,13 @@ postsRouter.post(
   postCommentRequestPayloadValidation,
   inputValidationResultMiddleware,
   postsController.createPostCommentHandler.bind(postsController),
+);
+
+postsRouter.put(
+  `/:id${LIKE_STATUS_PATH}`,
+  accessTokenGuardMiddleware,
+  idValidation,
+  setPostLikeStatusRequestPayloadValidation,
+  inputValidationResultMiddleware,
+  postsController.setLikeStatusHandler.bind(postsController),
 );

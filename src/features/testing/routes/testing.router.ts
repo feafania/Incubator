@@ -8,6 +8,7 @@ import { CommentsService } from "../../comments/application/comments.service";
 import { AuthService } from "../../auth/application/auth.service";
 import { RateLimitService } from "../../rate-limit/application/rate-limit.service";
 import { SessionService } from "../../auth/application/session.service";
+import { LikesService } from "../../likes/application/likes.service";
 
 const postsService = container.get<PostsService>(PostsService);
 const blogsService = container.get<BlogsService>(BlogsService);
@@ -16,6 +17,7 @@ const commentsService = container.get<CommentsService>(CommentsService);
 const authService = container.get<AuthService>(AuthService);
 const rateLimitService = container.get<RateLimitService>(RateLimitService);
 const sessionService = container.get<SessionService>(SessionService);
+const likesService = container.get<LikesService>(LikesService);
 
 export const testingRouter = Router();
 
@@ -32,6 +34,7 @@ export const deleteAllData = async (
       authService.deleteMany(),
       rateLimitService.deleteMany(),
       sessionService.deleteMany(),
+      likesService.deleteMany(),
     ]);
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
   } catch (error) {

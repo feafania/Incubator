@@ -114,6 +114,11 @@ export const post1 = {
   createdAt: new Date("2023-10-10T14:30:00Z"),
   updatedAt: new Date("2023-10-10T14:30:00Z"),
   update(dto: PostDomainDto) {},
+  extendedLikesInfo: {
+    likesCount: 0,
+    dislikesCount: 0,
+    newestLikes: [],
+  },
 };
 
 export const post2 = {
@@ -125,6 +130,11 @@ export const post2 = {
   createdAt: new Date("2023-08-10T14:30:00Z"),
   updatedAt: new Date("2023-08-10T14:30:00Z"),
   update(dto: PostDomainDto) {},
+  extendedLikesInfo: {
+    likesCount: 0,
+    dislikesCount: 0,
+    newestLikes: [],
+  },
 };
 
 export const post3 = {
@@ -136,6 +146,11 @@ export const post3 = {
   createdAt: new Date("2024-11-10T14:30:00Z"),
   updatedAt: new Date("2024-11-10T14:30:00Z"),
   update(dto: PostDomainDto) {},
+  extendedLikesInfo: {
+    likesCount: 0,
+    dislikesCount: 0,
+    newestLikes: [],
+  },
 };
 
 export const post4 = {
@@ -147,6 +162,11 @@ export const post4 = {
   createdAt: new Date("2023-12-10T14:30:00Z"),
   updatedAt: new Date("2023-12-10T14:30:00Z"),
   update(dto: PostDomainDto) {},
+  extendedLikesInfo: {
+    likesCount: 0,
+    dislikesCount: 0,
+    newestLikes: [],
+  },
 };
 
 export const post5 = {
@@ -158,6 +178,11 @@ export const post5 = {
   createdAt: new Date("2021-12-10T14:30:00Z"),
   updatedAt: new Date("2021-12-10T14:30:00Z"),
   update(dto: PostDomainDto) {},
+  extendedLikesInfo: {
+    likesCount: 0,
+    dislikesCount: 0,
+    newestLikes: [],
+  },
 };
 
 export const post6 = {
@@ -169,6 +194,11 @@ export const post6 = {
   createdAt: new Date("2024-01-10T14:30:00Z"),
   updatedAt: new Date("2024-01-10T14:30:00Z"),
   update(dto: PostDomainDto) {},
+  extendedLikesInfo: {
+    likesCount: 0,
+    dislikesCount: 0,
+    newestLikes: [],
+  },
 };
 
 export const post7 = {
@@ -180,6 +210,11 @@ export const post7 = {
   createdAt: new Date("2024-02-10T14:30:00Z"),
   updatedAt: new Date("2024-02-10T14:30:00Z"),
   update(dto: PostDomainDto) {},
+  extendedLikesInfo: {
+    likesCount: 0,
+    dislikesCount: 0,
+    newestLikes: [],
+  },
 };
 
 export const post8 = {
@@ -191,6 +226,11 @@ export const post8 = {
   createdAt: new Date("2023-12-31T14:30:00Z"),
   updatedAt: new Date("2023-12-31T14:30:00Z"),
   update(dto: PostDomainDto) {},
+  extendedLikesInfo: {
+    likesCount: 0,
+    dislikesCount: 0,
+    newestLikes: [],
+  },
 };
 
 export const post9 = {
@@ -202,6 +242,11 @@ export const post9 = {
   createdAt: new Date("2022-11-20T14:30:00Z"),
   updatedAt: new Date("2022-11-20T14:30:00Z"),
   update(dto: PostDomainDto) {},
+  extendedLikesInfo: {
+    likesCount: 0,
+    dislikesCount: 0,
+    newestLikes: [],
+  },
 };
 
 export const datasetPostValid = [post1, post2, post3, post4];
