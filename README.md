@@ -1,79 +1,49 @@
-# Blogs & Posts REST API (h04 - Business Logic & Pagination)
+# Blogs, Posts & Users REST API (h05 - Query Repository Focus)
 
 ## Description
-REST API with **Business Logic Layer (Services)**, Pagination, Sorting, and Search functionality.  
-Implemented according to Swagger (OpenAPI) documentation.
+REST API implemented according to Swagger (OpenAPI) documentation.  
+This version introduces **Users entity** with full CRUD operations, pagination, sorting, search, and password hashing flow.  
 
-This version introduces:
-- **BLL (Services layer)** for clean separation of business logic from HTTP controllers  
-- **Pagination with sorting** for blogs and posts  
-- **SearchNameTerm**: case-insensitive search by substring for blogs  
-- **New endpoints** for creating and fetching posts for a specific blog
+⚡ **Focus**: All user-related queries and business rules are handled in the **Query Repository / BLL layer**, separating business logic from HTTP controllers and middleware.
 
 ---
 
-## Endpoints
+## Auth
+- **POST** `/hometask_05/api/auth/login` — login user  
+  - Returns `401` if credentials are invalid  
+  - Returns `204` if credentials are valid  
+- Passwords are hashed in BLL during user creation
 
-### Blogs
-- **GET** `/hometask_04/api/blogs` — get blogs with pagination, sorting, and optional search (`SearchNameTerm`)  
-- **POST** `/hometask_04/api/blogs` — create a new blog  
-- **GET** `/hometask_04/api/blogs/{id}` — get blog by id  
-- **PUT** `/hometask_04/api/blogs/{id}` — update blog by id  
-- **DELETE** `/hometask_04/api/blogs/{id}` — delete blog by id  
+---
 
-### Posts for a specific blog
-- **GET** `/hometask_04/api/blogs/{blogId}/posts` — get posts for a specific blog with pagination  
-- **POST** `/hometask_04/api/blogs/{blogId}/posts` — create a post for a specific blog  
+## Blogs
+- **GET** `/hometask_05/api/blogs` — get blogs with pagination  
+- **POST** `/hometask_05/api/blogs` — create new blog  
+- **GET** `/hometask_05/api/blogs/{blogId}/posts` — get posts for a specific blog  
+- **POST** `/hometask_05/api/blogs/{blogId}/posts` — create post for a specific blog  
+- **GET** `/hometask_05/api/blogs/{id}` — get blog by id  
+- **PUT** `/hometask_05/api/blogs/{id}` — update blog  
+- **DELETE** `/hometask_05/api/blogs/{id}` — delete blog
 
 ### Posts
-- **GET** `/hometask_04/api/posts` — get all posts with pagination  
-- **POST** `/hometask_04/api/posts` — create a new post  
-- **GET** `/hometask_04/api/posts/{id}` — get post by id  
-- **PUT** `/hometask_04/api/posts/{id}` — update post by id  
-- **DELETE** `/hometask_04/api/posts/{id}` — delete post by id  
-
-### Testing
-- **DELETE** `/hometask_04/api/testing/all-data` — clear all data
+- **GET** `/hometask_05/api/posts` — get all posts with pagination  
+- **POST** `/hometask_05/api/posts` — create post  
+- **GET** `/hometask_05/api/posts/{id}` — get post by id  
+- **PUT** `/hometask_05/api/posts/{id}` — update post  
+- **DELETE** `/hometask_05/api/posts/{id}` — delete post
 
 ---
 
-## Features
+## Users
+- **GET** `/hometask_05/api/users` — list users with pagination, sorting, and search by login/email  
+  - Search is **handled in Query Repository**, allowing flexible substring search (case-insensitive)
+- **POST** `/hometask_05/api/users` — add new user  
+  - `login` and `email` must be unique — **checked in BLL / Query Repository**, not in middleware  
+  - Example error format for duplicate email:
 
-### Business Logic Layer (Services)
-- Handles data processing, database interaction, and API logic  
-- Keeps controllers clean and focused on HTTP requests  
-- Located in `application/` folder per feature for scalability  
-
-### Pagination & Sorting
-- Return paged results for blogs and posts  
-- Sort by name, createdAt, or other fields  
-- Meta info includes total count, page size, and current page
-
-### Search
-- `SearchNameTerm` allows case-insensitive substring search for blogs  
-- Example: `SearchNameTerm=va` returns blogs "Ivan", "DiVan", "JanClod Vandam"
-
----
-
-## Models
-- BlogInputModel / BlogPostInputModel  
-- PostInputModel  
-- BlogViewModel / PostViewModel (h03)  
-- Paginator\<BlogViewModel\> / Paginator\<PostViewModel\>  
-- APIErrorResult / FieldError  
-- SortDirections (h04)
-
----
-
-## Tech Stack
-- Node.js  
-- Express.js  
-- MongoDB  
-- Services (BLL)  
-- async/await  
-- Swagger (OpenAPI)
-
----
-
-## Purpose
-Practice building **scalable backend architecture** using services, implement **pagination, sorting, search**, and enhance API for blog-post relationships.
+```json
+{
+  "errorsMessages": [
+    {"field": "email", "message": "email should be unique"}
+  ]
+}
