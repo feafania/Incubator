@@ -1,5 +1,5 @@
 import request from "supertest";
-import { Application } from "express";
+import { Express } from "express";
 import { CreateUserDomainDto } from "../../../src/features/users/domain/create-user-domain.dto";
 import { createUserDto } from "../users/create-user-dto";
 import { randomUUID } from "node:crypto";
@@ -13,7 +13,7 @@ import { UsersService } from "../../../src/features/users/application/users.serv
  * Helper: login with custom user-agent and return tokens + cookies
  */
 export async function loginWithUserAgent(
-  app: Application,
+  app: Express,
   userDto?: CreateUserDomainDto,
   userAgent?: string,
 ): Promise<{

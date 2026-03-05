@@ -11,7 +11,7 @@ import { datasetBlogValid, setMongoDB } from "../../utils/datasets";
 import CreatePostRequestPayload from "../../../src/features/posts/routes/request-payloads/create-post-request.payload";
 import { mapToBlogOutput } from "../../../src/features/blogs/application/mappers/map-to-blog-output.util";
 import { BlogDomainDto } from "../../../src/features/blogs/domain/blog-domain.dto";
-import { Application } from "express";
+import { Express } from "express";
 import { createTestApp } from "../../create-test-app";
 import { clearDb } from "../../utils/clear-db";
 import request from "supertest";
@@ -19,7 +19,7 @@ import { ClassFieldsOnly } from "../../../src/core/types/fields-only";
 import mongoose from "mongoose";
 
 describe("tests for /blogs", () => {
-  let app: Application;
+  let app: Express;
   let mongoServer: MongoMemoryServer;
 
   beforeAll(async () => {

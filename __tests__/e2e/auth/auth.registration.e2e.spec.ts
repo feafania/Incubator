@@ -1,5 +1,5 @@
 import request from "supertest";
-import { Application } from "express";
+import { Express } from "express";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { clearDb } from "../../utils/clear-db";
 import { createUserWithConfirmationCode } from "../../utils/users/create-user-with-confirmation-code";
@@ -7,10 +7,9 @@ import { createUserDto } from "../../utils/users/create-user-dto";
 import { HTTP_STATUSES } from "../../../src/core/types/http-statuses";
 import { createTestApp, stopTestDb } from "../../create-test-app";
 import { AUTH_PATH, REGISTRATION_PATH } from "../../../src/core/paths/paths";
-import { UsersRepository } from "../../../src/features/users/repositories/users.repository";
 
 describe("Auth API /auth/registration", () => {
-  let app: Application;
+  let app: Express;
   let mongoServer: MongoMemoryServer;
 
   beforeAll(async () => {

@@ -1,5 +1,5 @@
 import request from "supertest";
-import { Application } from "express";
+import { Express } from "express";
 import { createTestApp, stopTestDb } from "../../create-test-app";
 import { clearDb } from "../../utils/clear-db";
 import { MongoMemoryServer } from "mongodb-memory-server";
@@ -10,7 +10,7 @@ import { HTTP_STATUSES } from "../../../src/core/types/http-statuses";
 import { LikeStatus } from "../../../src/features/likes/domain/like-status-type";
 
 describe("Posts Like Status API", () => {
-  let app: Application;
+  let app: Express;
   let mongoServer: MongoMemoryServer;
 
   beforeAll(async () => {

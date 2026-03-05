@@ -1,10 +1,10 @@
 // @ts-ignore
 import request from "supertest";
-import { Application } from "express";
+import { Express } from "express";
 import { TESTING_PATH } from "../../src/core/paths/paths";
 import { HTTP_STATUSES } from "../../src/core/types/http-statuses";
 
-export async function clearDb(app: Application) {
+export async function clearDb(app: Express) {
   await request(app)
     .delete(`${TESTING_PATH}`)
     .expect(HTTP_STATUSES.NO_CONTENT_204);

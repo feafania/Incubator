@@ -1,5 +1,5 @@
 import request from "supertest";
-import { Application } from "express";
+import { Express } from "express";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { clearDb } from "../../utils/clear-db";
 import { createUserDto } from "../../utils/users/create-user-dto";
@@ -14,7 +14,7 @@ import {
 import { findCookie } from "../../utils/auth/extract-cookie";
 
 describe("Auth API /auth/refresh-token", () => {
-  let app: Application;
+  let app: Express;
   let mongoServer: MongoMemoryServer;
 
   beforeAll(async () => {

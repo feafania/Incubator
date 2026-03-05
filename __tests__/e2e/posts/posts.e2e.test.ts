@@ -11,7 +11,7 @@ import {
 import CreatePostInputModel from "../../../src/features/posts/routes/request-payloads/create-post-request.payload";
 import { HTTP_STATUSES } from "../../../src/core/types/http-statuses";
 import { Post, PostModel } from "../../../src/features/posts/domain/posts";
-import { Application } from "express";
+import { Express } from "express";
 import { createTestApp } from "../../create-test-app";
 import { ClassFieldsOnly } from "../../../src/core/types/fields-only";
 import { clearDb } from "../../utils/clear-db";
@@ -25,7 +25,7 @@ import { testMapToPostOutput } from "../../utils/posts/map-to-post-output";
 // createdInfo.id.toString()
 
 describe("tests for /posts", () => {
-  let app: Application;
+  let app: Express;
   let mongoServer: MongoMemoryServer;
 
   beforeAll(async () => {

@@ -1,5 +1,5 @@
 import request from "supertest";
-import { Application } from "express";
+import { Express } from "express";
 import { UserOutput } from "../../../src/features/users/application/output/user.output";
 import { CreateUserDomainDto } from "../../../src/features/users/domain/create-user-domain.dto";
 import { createUserDto } from "./create-user-dto";
@@ -13,7 +13,7 @@ type UserWithToken = {
 };
 
 export async function createUserAndLogin(
-  app: Application,
+  app: Express,
   userDto?: CreateUserDomainDto,
 ): Promise<UserWithToken> {
   // 1️⃣ Захоўваем поўны dto з паролем
