@@ -11,7 +11,7 @@ import { datasetBlogValid, setMongoDB } from "../../utils/datasets";
 import CreatePostRequestPayload from "../../../src/features/posts/routes/request-payloads/create-post-request.payload";
 import { mapToBlogOutput } from "../../../src/features/blogs/application/mappers/map-to-blog-output.util";
 import { BlogDomainDto } from "../../../src/features/blogs/domain/blog-domain.dto";
-import { Express } from "express";
+import { Application } from "express";
 import { createTestApp } from "../../create-test-app";
 import { clearDb } from "../../utils/clear-db";
 import request from "supertest";
@@ -19,7 +19,7 @@ import { ClassFieldsOnly } from "../../../src/core/types/fields-only";
 import mongoose from "mongoose";
 
 describe("tests for /blogs", () => {
-  let app: Express;
+  let app: Application;
   let mongoServer: MongoMemoryServer;
 
   beforeAll(async () => {
@@ -28,7 +28,7 @@ describe("tests for /blogs", () => {
     app = setup.app;
     mongoServer = setup.mongoServer;
     // console.log(await blogCollection.find().toArray())
-    const info = await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel, []);
+    const info = await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel as any, []);
   });
 
   afterAll(async () => {
@@ -59,7 +59,7 @@ describe("tests for /blogs", () => {
 
   it("should get not empty blogs array", async () => {
     const info = await setMongoDB<ClassFieldsOnly<Blog>>(
-      BlogModel,
+      BlogModel as any,
       datasetBlogValid,
     );
 
@@ -152,7 +152,7 @@ describe("tests for /blogs", () => {
   });
 
   it("shouldn't find blog", async () => {
-    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel, datasetBlogValid);
+    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel as any, datasetBlogValid);
 
     const res = await request
       .agent(app)
@@ -164,7 +164,7 @@ describe("tests for /blogs", () => {
 
   it("should update blog", async () => {
     const info = await setMongoDB<ClassFieldsOnly<Blog>>(
-      BlogModel,
+      BlogModel as any,
       datasetBlogValid,
     );
     const updateBlog = {
@@ -204,7 +204,7 @@ describe("tests for /blogs", () => {
 
   it("should not delete blog unauthorized", async () => {
     const info = await setMongoDB<ClassFieldsOnly<Blog>>(
-      BlogModel,
+      BlogModel as any,
       datasetBlogValid,
     );
 
@@ -216,7 +216,7 @@ describe("tests for /blogs", () => {
   });
 
   it("should delete existing blog", async () => {
-    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel, datasetBlogValid);
+    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel as any, datasetBlogValid);
     const currentId = datasetBlogValid[1]._id;
 
     await request
@@ -240,7 +240,7 @@ describe("tests for /blogs", () => {
   });
 
   it("should delete all blogs", async () => {
-    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel, datasetBlogValid);
+    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel as any, datasetBlogValid);
     const res = await request
       .agent(app)
       .set("Authorization", "Basic " + codedAuthorization)
@@ -250,7 +250,9 @@ describe("tests for /blogs", () => {
   });
 
   it("should get empty posts array for existing blog", async () => {
-    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel, [datasetBlogValid[0]]);
+    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel as any, [
+      datasetBlogValid[0],
+    ]);
 
     const res = await request
       .agent(app)
@@ -269,7 +271,9 @@ describe("tests for /blogs", () => {
   });
 
   it("should create and get posts for specific blog", async () => {
-    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel, [datasetBlogValid[0]]);
+    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel as any, [
+      datasetBlogValid[0],
+    ]);
 
     const newPost: Omit<CreatePostRequestPayload, "blogId"> = {
       title: "My first rabbit story",

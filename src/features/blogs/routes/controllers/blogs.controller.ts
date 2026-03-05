@@ -30,9 +30,9 @@ export class BlogsController {
   ) {
     try {
       const createdPostId = await this.blogsService.create(req.body);
-      const post = await this.blogQueryService.findByIdOrFail(createdPostId);
+      const blog = await this.blogQueryService.findByIdOrFail(createdPostId);
 
-      res.status(HTTP_STATUSES.CREATE_201).send(post);
+      res.status(HTTP_STATUSES.CREATE_201).send(blog);
     } catch (e: unknown) {
       errorsHandler(e, res);
     }

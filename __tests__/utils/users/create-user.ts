@@ -1,5 +1,5 @@
 import request from "supertest";
-import { Express } from "express";
+import { Application } from "express";
 import { UserOutput } from "../../../src/features/users/application/output/user.output";
 import { CreateUserRequestPayload } from "../../../src/features/users/routes/request-payloads/create-user-request.payload";
 import { CreateUserDomainDto } from "../../../src/features/users/domain/create-user-domain.dto";
@@ -8,7 +8,7 @@ import { generateBasicAuthToken } from "../generate-admin-auth-token";
 import { HTTP_STATUSES } from "../../../src/core/types/http-statuses";
 import { USERS_PATH } from "../../../src/core/paths/paths";
 export async function createUser(
-  app: Express,
+  app: Application,
   userDto?: CreateUserDomainDto,
 ): Promise<UserOutput> {
   const testUserData: CreateUserRequestPayload = {

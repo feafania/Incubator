@@ -1,4 +1,4 @@
-import express, { Express } from "express";
+import express, { Application } from "express";
 import cors from "cors";
 import { setupSwagger } from "./core/swagger/setup-swagger";
 import { SETTINGS } from "./core/settings/settings";
@@ -16,7 +16,7 @@ import { securityRouter } from "./features/security/routes/security.route";
  * Настраиваем routes, cors, swagger
  * @param app
  */
-export const setupApp = (app: Express) => {
+export const setupApp = (app: Application) => {
   app.use(express.json()); // создание свойств-объектов body и query во всех реквестах
   app.use(cookieParser());
   app.use(cors()); // разрешить любым фронтам делать запросы на наш бэк

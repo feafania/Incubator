@@ -1,5 +1,5 @@
 import request from "supertest";
-import { Express } from "express";
+import { Application } from "express";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { clearDb } from "../../utils/clear-db";
 import { HTTP_STATUSES } from "../../../src/core/types/http-statuses";
@@ -11,7 +11,7 @@ import {
 } from "../../../src/core/paths/paths";
 
 describe("Auth API body validation / refresh-token & logout", () => {
-  let app: Express;
+  let app: Application;
   let mongoServer: MongoMemoryServer;
 
   beforeAll(async () => {

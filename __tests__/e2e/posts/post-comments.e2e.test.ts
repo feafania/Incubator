@@ -24,7 +24,7 @@ describe("tests for /posts/:id/comments", () => {
     const setup = await createTestApp();
     app = setup.app;
     mongoServer = setup.mongoServer;
-    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid);
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel as any, datasetPostValid);
     validPostId = datasetPostValid[0]._id!.toString();
     // console.log(await postCollection.find().toArray())
 

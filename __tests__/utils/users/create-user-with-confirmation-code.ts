@@ -4,13 +4,13 @@ import { CreateUserDomainDto } from "../../../src/features/users/domain/create-u
 import { createUserDto } from "./create-user-dto";
 import { HTTP_STATUSES } from "../../../src/core/types/http-statuses";
 import { AUTH_PATH, REGISTRATION_PATH } from "../../../src/core/paths/paths";
-import { Express } from "express";
+import { Application } from "express";
 import { UsersRepository } from "../../../src/features/users/repositories/users.repository";
 import { WithId } from "mongodb";
 import { User } from "../../../src/features/users/domain/user";
 
 export async function createUserWithConfirmationCode(
-  app: Express,
+  app: Application,
   userDto?: CreateUserDomainDto,
 ): Promise<WithId<User> | null> {
   const testUserData: CreateUserRequestPayload = {

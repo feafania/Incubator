@@ -11,7 +11,7 @@ import {
 import CreatePostInputModel from "../../../src/features/posts/routes/request-payloads/create-post-request.payload";
 import { HTTP_STATUSES } from "../../../src/core/types/http-statuses";
 import { Post, PostModel } from "../../../src/features/posts/domain/posts";
-import { Express } from "express";
+import { Application } from "express";
 import { createTestApp } from "../../create-test-app";
 import { ClassFieldsOnly } from "../../../src/core/types/fields-only";
 import { clearDb } from "../../utils/clear-db";
@@ -25,7 +25,7 @@ import { testMapToPostOutput } from "../../utils/posts/map-to-post-output";
 // createdInfo.id.toString()
 
 describe("tests for /posts", () => {
-  let app: Express;
+  let app: Application;
   let mongoServer: MongoMemoryServer;
 
   beforeAll(async () => {
@@ -34,7 +34,7 @@ describe("tests for /posts", () => {
     app = setup.app;
     mongoServer = setup.mongoServer;
     // console.log(await postCollection.find().toArray())
-    setMongoDB<ClassFieldsOnly<Post>>(PostModel, []);
+    setMongoDB<ClassFieldsOnly<Post>>(PostModel as any, []);
   });
 
   afterAll(async () => {
@@ -65,7 +65,7 @@ describe("tests for /posts", () => {
   });
 
   it("should get not empty posts array", async () => {
-    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid); // заполнение базы данных начальными данными если нужно
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel as any, datasetPostValid); // заполнение базы данных начальными данными если нужно
     const res = await request
       .agent(app)
       .get(SETTINGS.PATH.POSTS)
@@ -108,7 +108,7 @@ describe("tests for /posts", () => {
   });
 
   it("should create", async () => {
-    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel, datasetBlogValid);
+    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel as any, datasetBlogValid);
     const res = await request
       .agent(app)
       .set("Authorization", "Basic " + codedAuthorization)
@@ -156,7 +156,7 @@ describe("tests for /posts", () => {
   });
 
   it("shouldn't find post", async () => {
-    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid);
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel as any, datasetPostValid);
 
     const res = await request
       .agent(app)
@@ -167,8 +167,8 @@ describe("tests for /posts", () => {
   });
 
   it("should update post", async () => {
-    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel, datasetBlogValid);
-    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid);
+    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel as any, datasetBlogValid);
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel as any, datasetPostValid);
 
     const updatePost = {
       ...datasetPostValid[0],
@@ -185,7 +185,7 @@ describe("tests for /posts", () => {
   });
 
   it("shouldn't update post", async () => {
-    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel, datasetBlogValid);
+    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel as any, datasetBlogValid);
     const updatePost = {
       _id: new mongoose.Types.ObjectId(),
       title: "Stories",
@@ -206,8 +206,8 @@ describe("tests for /posts", () => {
   });
 
   it("shouldn't update post with wrong title", async () => {
-    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel, datasetBlogValid);
-    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid);
+    await setMongoDB<ClassFieldsOnly<Blog>>(BlogModel as any, datasetBlogValid);
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel as any, datasetPostValid);
     const updatePost = {
       _id: post1._id,
       title: "Stories stories stories stories stories stories",
@@ -228,7 +228,7 @@ describe("tests for /posts", () => {
   });
 
   it("should not delete post unauthorized", async () => {
-    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid);
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel as any, datasetPostValid);
 
     await request
       .agent(app)
@@ -238,7 +238,7 @@ describe("tests for /posts", () => {
   });
 
   it("should delete existing post", async () => {
-    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid);
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel as any, datasetPostValid);
     const currentId = datasetPostValid[1]._id;
     await request
       .agent(app)
@@ -260,7 +260,7 @@ describe("tests for /posts", () => {
   });
 
   it("should delete all posts", async () => {
-    await setMongoDB<ClassFieldsOnly<Post>>(PostModel, datasetPostValid);
+    await setMongoDB<ClassFieldsOnly<Post>>(PostModel as any, datasetPostValid);
     await request
       .agent(app)
       .set("Authorization", "Basic " + codedAuthorization)

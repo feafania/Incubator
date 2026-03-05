@@ -1,5 +1,5 @@
 import request from "supertest";
-import express from "express";
+import { Application } from "express";
 import { createTestApp, stopTestDb } from "../../create-test-app";
 import { clearDb } from "../../utils/clear-db";
 import { MongoMemoryServer } from "mongodb-memory-server";
@@ -10,7 +10,7 @@ import { HTTP_STATUSES } from "../../../src/core/types/http-statuses";
 import { LikeStatus } from "../../../src/features/likes/domain/like-status-type";
 
 describe("Posts Like Status API", () => {
-  let app: express.Express;
+  let app: Application;
   let mongoServer: MongoMemoryServer;
 
   beforeAll(async () => {
@@ -30,7 +30,6 @@ describe("Posts Like Status API", () => {
   it("✅ should set Like status; PUT /posts/:id/like-status", async () => {
     const { accessToken } = await createUserAndLogin(app);
     const post = await createPost(app, accessToken);
-
     await request(app)
       .put(`${POSTS_PATH}/${post.id}/like-status`)
       .set("Authorization", `Bearer ${accessToken}`)
