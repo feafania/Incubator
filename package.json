@@ -5,6 +5,7 @@
   "scripts": {
     "watch": "tsc -w",
     "build": "pnpm run compile",
+    "vercel-build": "pnpm install --force && npx tsc",
     "dev": "nodemon --watch src --ext ts --exec \"node --inspect -r ts-node/register src/server.ts\"",
     "dev:compiled": "nodemon --inspect dist/server.js",
     "jest": "jest -i",
