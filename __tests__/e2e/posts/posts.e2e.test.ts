@@ -10,10 +10,7 @@ import {
 } from "../../utils/datasets";
 import CreatePostInputModel from "../../../src/features/posts/routes/request-payloads/create-post-request.payload";
 import { HTTP_STATUSES } from "../../../src/core/types/http-statuses";
-import {
-  Post,
-  PostModel,
-} from "../../../src/features/posts/domain/posts";
+import { Post, PostModel } from "../../../src/features/posts/domain/posts";
 import { Express } from "express";
 import { createTestApp } from "../../create-test-app";
 import { ClassFieldsOnly } from "../../../src/core/types/fields-only";

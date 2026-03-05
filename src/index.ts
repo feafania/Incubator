@@ -4,7 +4,7 @@ import { runDB } from "./db/mongo.db";
 import { SETTINGS } from "./core/settings/settings";
 
 declare global {
-  // каб TS не падаў памылку на __dbConnected
+  // to avoid error on __dbConnected
   var __dbConnected: boolean | undefined;
 }
 

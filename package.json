@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "watch": "tsc -w",
+    "build": "pnpm run compile",
     "dev": "nodemon --watch src --ext ts --exec \"node --inspect -r ts-node/register src/server.ts\"",
     "dev:compiled": "nodemon --inspect dist/server.js",
     "jest": "jest -i",
@@ -34,7 +35,7 @@
     "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
+    "@types/express": "^4.17.25",
     "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.0.1",

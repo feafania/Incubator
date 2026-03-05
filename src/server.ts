@@ -6,7 +6,7 @@ import { runDB } from "./db/mongo.db";
 import { formattedDate } from "./core/utils/date.utils";
 
 const bootstrap = async () => {
-  const app = express(); // создать приложение
+  const app = express(); // create app
 
   setupApp(app);
 

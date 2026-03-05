@@ -1,5 +1,5 @@
 import "express";
-import { Request } from "express";
+
 /**
  * Чтобы указать Typescript о том, что мы добавили новые значения
  * и свойства в глобальной области видимости
@@ -17,3 +17,5 @@ declare global {
     }
   }
 }
+
+export {};
