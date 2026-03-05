@@ -1,6 +1,14 @@
 {
   "version": 2,
   "name": "blogs",
-  "builds": [{ "src": "src/index.ts", "use": "@vercel/node" }],
+  "builds": [
+    {
+      "src": "src/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "tsconfig": "tsconfig.json"
+      }
+    }
+  ],
   "routes": [{ "src": "/(.*)", "dest": "src/index.ts" }]
 }
